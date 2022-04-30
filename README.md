@@ -1,10 +1,9 @@
-<center><h1 style="font-size:3em;"><b>Mapache Server 2022</b></h1></center>
-
 <div style='text-align: center;' align='center'>
     <img style='max-heigth: 200px;' src='misc/mapache.png'/>
 </div>
 
-<center>This project is my take on a simple, but fully functional Web Server</center>
+<center><i>This project is my take on a simple, but fully functional Web Server</i></center>
+
 ***
 
 ## **Contents**
@@ -16,6 +15,7 @@
 
 	1.3. [Server configuration](#13-how-to-edit-the-server-config-file)
 
+2. [Frequently Asked Questions](#2-faq)
 
 ## 1. How to install? How to use the Makefile?
 
@@ -89,5 +89,13 @@ There is a server config file, called `server_conf.conf`, which allows you to ed
 
 Feel free to adjust these values to your needs.
 
+
+## 2. FAQ
+
+### *What's with the name 'Mapache'?*
+Remember good old <a href="https://httpd.apache.org/" target="_blank">Apache Server</a>? Well, I think that pretty much answers your question :^)
+
+### *Can I contribute to it?*
+Yes! This project is licensed with the GNU Public License, so as far as I'm concerned, it's totally ok for you to create a pull request. I will validate your code and, if all goes okay, you will become an oficial Racoon Contributor.
 
 <img style='max-heigth: 200px;' src='misc/emoji.png'/><i>Thanks for checking this project out!</i>
