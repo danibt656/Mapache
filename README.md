@@ -25,7 +25,7 @@
 $ make all
 ```
 
-To clean binary files & build directories, use `make all`:
+To clean binary files & build directories, use:
 
 ```
 $ make clean
@@ -73,7 +73,7 @@ This repo contains a `web/` folder with both the Mapache start page (for checkin
 
 The benchmarking page contains several items that display the current capabilities of Mapache, along with a loading chronometer. It is hosted at:
 
-`http://localhost:8080/benchmarking.html`
+`http://localhost:8080/benchmark.html`
 
 ### 1.3 How to edit the server config file?
 
@@ -96,6 +96,6 @@ Feel free to adjust these values to your needs.
 Remember good old <a href="https://httpd.apache.org/" target="_blank">Apache Server</a>? Well, I think that pretty much answers your question :^)
 
 ### *Can I contribute to it?*
-Yes! This project is licensed with the GNU Public License, so as far as I'm concerned, it's totally ok for you to create a pull request. I will validate your code and, if all goes okay, you will become an oficial Racoon Contributor.
+Yes! This project is licensed with the MIT License, so as far as I'm concerned, it's totally ok for you to create a pull request. I will validate your code and, if all goes okay, you will become an oficial Racoon Contributor.
 
 <img style='max-heigth: 200px;' src='misc/emoji.png'/><i>Thanks for checking this project out!</i>

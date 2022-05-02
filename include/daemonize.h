@@ -6,12 +6,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/prctl.h>
 
 #include "../include/liblog.h"
 
 /**
  * Convertir el proceso maestro (actual) en demonio
 */
-void do_daemon();
+void do_daemon(char* signature);
 
 #endif

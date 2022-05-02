@@ -8,15 +8,14 @@
 #include "../include/libsocket.h"
 
 /******************************************************
- *      Funciones Wrapper
- *  Encapsulan el control de errores
+ *  Wrappers for POSIX-socket API
 ******************************************************/
 int Socket(int family, int type, int protocol)
 {
     int n;
     if ( (n = socket(family, type, protocol)) < 0) {
         perror("socket");
-        LOG_ERR("Fallo al crear socket");
+        LOG_ERR("Failed to create socket");
         exit(EXIT_FAILURE);
     }
     return n;
@@ -26,7 +25,7 @@ int Setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t
 {
     if (setsockopt(sockfd, level, optname, optval, optlen) == -1) {
         perror("setsockopt");
-        LOG_ERR("Fallo al obtener puerto para servidor");
+        LOG_ERR("Failed to get listening port");
         exit(EXIT_FAILURE);
     }   
 }
@@ -35,7 +34,7 @@ void Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
     if (bind(sockfd, addr, addrlen) < 0) {
         perror("bind");
-        LOG_ERR("Fallo al enlazar socket con direcction de host");
+        LOG_ERR("Failed to bind server socket to host");
         exit(EXIT_FAILURE);
     }
 }
@@ -46,13 +45,13 @@ void Listen(int sockfd, int backlog)
 
     if (listen(sockfd, backlog) < 0) {
         perror("listen");
-        LOG_ERR("Fallo al activar la escucha");
+        LOG_ERR("Failed to start listening");
         exit(EXIT_FAILURE);
     }
 }
 
 /******************************************************
- *      Funciones de envio de datos
+ *  Sending data
 ******************************************************/
 int sendall(int fd, char *vptr, int *len)
 {
@@ -66,9 +65,8 @@ int sendall(int fd, char *vptr, int *len)
         bytesleft -= n;
     }
 
-    *len = total;       /* Retornar num bytes enviados aqui */
+    *len = total;   // Return number of bytes sent
 
-    /* -1 si fallo, 0 si exito */
     return n == -1 ? -1 : 0;
 }
 
@@ -79,7 +77,7 @@ void send_file(const char *filename, int sockfd)
     FILE *fp = fopen(filename, "r");
 
     if (fp == NULL) {
-        LOG_ERR("No se pudo leer fichero: %s", filename);
+        LOG_ERR("Couldn't read file %s", filename);
         close(sockfd);
         exit(EXIT_FAILURE);
     }
@@ -87,7 +85,7 @@ void send_file(const char *filename, int sockfd)
     while(fread(data, 1, BUFFLEN+1, fp) != 0) {
         if (send(sockfd, data, sizeof(data), 0) == -1) {
             perror("send");
-            LOG_ERR("No se pudo enviar buffer desde fichero");
+            LOG_ERR("Couldn't send buffer from file");
             fclose(fp);
             close(sockfd);
             exit(EXIT_FAILURE);

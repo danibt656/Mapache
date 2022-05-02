@@ -1,28 +1,18 @@
 #include "../include/httplib.h"
 #include "../include/liblog.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#define AUX_SIZE 2048
-
 
 
 // ****************************************************************************
 //                                 HTTP Request
 // ****************************************************************************
-/* Estructura para una request */
 struct _Http_request {
-    char method[METHOD_SIZE];               // Metodo (GET, POST, OPTIONS)
+    char method[METHOD_SIZE];               // Method (GET, POST, OPTIONS)
     char path[PATH_SIZE];                   // Path (URL/URI)
-    char post_args[POST_ARGS_SIZE];         // Argumentos (en caso de ser POST)
-    struct phr_header headers[NUM_HEADERS]; // Cabeceras
-    int num_headers;                        // Numero de cabeceras
-    int version;                            // Version de HTTP
-    int size;                               // Tamanio de request
+    char post_args[POST_ARGS_SIZE];         // Arguments (if method == POST)
+    struct phr_header headers[NUM_HEADERS]; // Headers
+    int num_headers;                        // Num of headers
+    int version;                            // HTTP version
+    int size;                               // Request size
 };
 
 Http_request* httprequest_init()
@@ -65,7 +55,7 @@ Http_request *httprequest_parse_and_map(int cli_fd)
     }
 
     while (1) {
-        /* leer la request */
+        /* read request */
         while ((rret = read(cli_fd, buff + buflen, sizeof(buff) - buflen)) == -1 && errno == EINTR);
 
         if (rret <= 0)
@@ -73,13 +63,13 @@ Http_request *httprequest_parse_and_map(int cli_fd)
         prevbuflen = buflen;
         buflen += rret;
 
-        /* parsear la request */
+        /* parse request */
         num_headers = sizeof(headers) / sizeof(headers[0]);
         pret = phr_parse_request(buff, buflen, &method, &method_len, &path, &path_len,
                                 &minor_version, headers, &num_headers, prevbuflen);
         
         if (pret > 0) {
-            LOG_INFO("HTTP Request parseada");
+            LOG_INFO("HTTP Request parsed");
             break;
         }
         
@@ -87,20 +77,20 @@ Http_request *httprequest_parse_and_map(int cli_fd)
             return NULL;
         }
 
-        /* request incompleta, continuar bucle */
+        /* incomplete request, continue loop */
         assert(pret == -2);
 
-        if (buflen == sizeof(buff)) {
+        if (buflen == sizeof(buff))
             return NULL;
-        }
     }
 
-    /* Introducir los datos en la estructura y validar */
-    if (httprequest_set_all(request, buff, method_len,
+    /* Enter data into struct & valdiate it */
+    int validate_status = 0;
+    if ((validate_status = httprequest_set_all(request, buff, method_len,
                             method, path_len,path, minor_version,
-                            pret, num_headers, headers) == HTTP_INVALID)
+                            pret, num_headers, headers)) != HTTP_VALID)
     {
-        Http_response *error = http_response_get_error_response(ERR_400);
+        Http_response *error = http_response_get_error_response(validate_status);
         httpresponse_send_error(error, cli_fd);
         httpresponse_free(error);
         return NULL;
@@ -124,28 +114,28 @@ int httprequest_set_all(Http_request* req,
     char *path_root = NULL;
     int i;
 
-    /* Metodo */
+    /* Method */
     sprintf(aux, "%.*s", (int) method_len, method);
-        /* Comprobacion de soporte */
-    if (check_http_method(aux) == -1) {
-        LOG_ERR("Metodo no soportado. Solo acepta GET, POST y OPTIONS.");
-        return HTTP_INVALID;
+        /* Check method support */
+    if (check_http_method_support(aux) == -1) {
+        LOG_ERR("501 Method %s not implemented", aux);
+        return ERR_501;
     }
     strcpy(req->method, aux);
     memset(aux, 0, strlen(aux));
 
     /* Version */
-        /* Comprobacion de soporte */
+        /* Support version check */
     if (version != HTTP_V_0 && version != HTTP_V_1) {
-        LOG_ERR("Version HTTP no compatible. Solo acepta HTTP/1.0 o HTTP/1.1.");
-        return HTTP_INVALID;
+        LOG_ERR("HTTP version is incompatible. Only accepts HTTP/1.0 or HTTP/1.1.");
+        return ERR_505;
     }
     req->version = version;
 
     /* Path */
     char aux2[AUX_SIZE];
     sprintf(aux2, "%.*s", (int) path_len, path);
-        /* Concatenar con server_root (fichero de configuracion) */
+        /* Concatenate with server root (absolute path) */
     path_root = getenv(ROOT_ENV);
     sprintf(aux, "%s%s", path_root, aux2);
     strcpy(req->path, aux);
@@ -154,7 +144,7 @@ int httprequest_set_all(Http_request* req,
     /* Size */
     req->size = size;
 
-    /* Cabeceras */
+    /* Headers */
     req->num_headers = num_headers;
     for (i = 0; i != num_headers; ++i) {
         req->headers[i].name_len = headers[i].name_len;
@@ -169,11 +159,11 @@ int httprequest_set_all(Http_request* req,
         strcpy(req->post_args, aux);
     }
 
-    LOG_INFO("HTTP Request valida");
+    LOG_INFO("HTTP Request valid");
     return HTTP_VALID;
 }
 
-int check_http_method(char *method)
+int check_http_method_support(char *method)
 {
     if (STRCMP(method, "GET"))
         return 0;
@@ -187,31 +177,30 @@ int check_http_method(char *method)
 
 void httprequest_print(Http_request* req)
 {
-    LOG_INFO("Tamanio: %d bytes", req->size);
-    LOG_INFO("Comando: %s", req->method);
+    LOG_INFO("Size: %d bytes", req->size);
+    LOG_INFO("Command: %s", req->method);
     LOG_INFO("Path: %s", req->path);
-    LOG_INFO("Version HTTP: 1.%d", req->version);
+    LOG_INFO("HTTP version: 1.%d", req->version);
 
-    LOG_INFO("%d cabeceras:", req->num_headers);
+    LOG_INFO("%d headers:", req->num_headers);
     for (int i = 0; i < req->num_headers; i++) {
         LOG_INFO("%.*s: %.*s", (int)req->headers[i].name_len, (char*)req->headers[i].name, \
                                  (int)req->headers[i].value_len, (char*)req->headers[i].value);
     }
     if(strstr(req->method, "POST"))
-        LOG_INFO("Argumentos del POST: %s\n", req->post_args);
+        LOG_INFO("POST arguments: %s\n", req->post_args);
 }
 
 // ****************************************************************************
 //                                 HTTP RESPONSE
 // ****************************************************************************
-/* Estructura para una response */
 struct _Http_response {
-    int version;                            // Version de HTTP
-    int code;                               // Codigo (200, 400, 404)
-    char message[PATH_SIZE];                // Mensaje (OK, Not Found...)
-    char headers[NUM_HEADERS][HEADER_SIZE]; // Cabeceras
-    int num_headers;                        // Numero de cabeceras
-    char *content;                          // Contenido de response
+    int version;                            // HTTP version
+    int code;                               // Response code (200, 400, 404, 500)
+    char message[PATH_SIZE];                // Response text (OK, Not Found...)
+    char headers[NUM_HEADERS][HEADER_SIZE]; // Headers
+    int num_headers;                        // Num of headers
+    char *content;                          // Response content
 };
 
 Http_response* httpresponse_init()
@@ -246,7 +235,6 @@ void http_response_eval_request(Http_request *request, int cli_fd)
     Http_response *response = httpresponse_init(); 
     if(!response) return;
 
-    /* Si es OPTIONS, responder */
     if (STRCMP(request->method, "OPTIONS")) {
         response->content = NULL;
         http_response_set_headers(response, NULL, NULL, -1);
@@ -255,14 +243,12 @@ void http_response_eval_request(Http_request *request, int cli_fd)
         return;
     }
 
-    /* Memoria para un conjunto de argumentos GET */
     char* args_for_get = malloc(strlen((request->path)+1)*sizeof(char*));
     if(!args_for_get){
         httpresponse_free(response);
         return;
     }
-
-    /* Extraer los argumentos del path, si tiene */
+    /* Extract args from path (if there are any) */
     char *path;
     if(!(path = get_args_for_get(request->path, args_for_get))){
         free(args_for_get);
@@ -270,12 +256,10 @@ void http_response_eval_request(Http_request *request, int cli_fd)
         return;
     }
 
-    /* Mirar si el fichero pedido existe */
     if (access(path, F_OK) != 0) {
-        LOG_ERR("404 Fichero %s no existe", path);
+        LOG_ERR("404 File %s not found", path);
         httpresponse_free(response);
         free(args_for_get);
-        /* Enviar error 404 not found */
         Http_response *error = http_response_get_error_response(ERR_404);
         httpresponse_send_error(error, cli_fd);
         httpresponse_free(error);
@@ -286,16 +270,13 @@ void http_response_eval_request(Http_request *request, int cli_fd)
     char *ext = get_filename_extension(path);
     LOG_INFO("Extension: %s", ext);
     
-    /* Enviar estructura en formato ASCII */
+    /* Send response as ASCII */
     char args_for_post[AUX_SIZE]="";
     if (STRCMP(request->method, "POST"))
         get_args_for_post(request->post_args, args_for_post);
     httpresponse_send_response(request, response, cli_fd, path, ext, args_for_get, args_for_post);
-    
+    LOG_INFO("HTTP Response sent");
 
-    LOG_INFO("HTTP Response enviada");
-
-    /* Liberar memoria */
     free(args_for_get);
     httpresponse_free(response);
 }
@@ -353,7 +334,7 @@ void http_response_set_headers(Http_response* response, char *path, char *ext, i
         sprintf(content_len, "Content-Length: %ld\r\n", con_len);
     }
 
-    /* Poner headers en estructura */
+    /* Set headers in struct */
     strcpy(response->headers[0], date);
     strcpy(response->headers[1], server);
     strcpy(response->headers[2], last_mod);
@@ -364,8 +345,7 @@ void http_response_set_headers(Http_response* response, char *path, char *ext, i
 void http_response_date(char *buf, size_t buf_len, struct tm *tm)
 {
     const char *days[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
-        "Aug", "Sep", "Oct", "Nov", "Dec"};
+    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
     snprintf(buf, buf_len, "%s, %d %s %d %02d:%02d:%02d GMT",
         days[tm->tm_wday], tm->tm_mday, months[tm->tm_mon],
@@ -386,40 +366,8 @@ int http_response_date_now(char *buf, size_t buf_len)
     return 0;
 }
 
-char *get_filename_extension(char *filename) {
-    char *dot = strrchr(filename, '.');
-    if(!dot || dot == filename) return "";
-    return dot + 1;
-}
-
-int get_content_type(char* ext, char* http_formated_type){
-    if(STRCMP("html", ext) || STRCMP("htm", ext)
-        || STRCMP("py", ext) || STRCMP("php", ext))
-        strcpy(http_formated_type, "text/html");
-    else if (STRCMP("gif", ext))
-        strcpy(http_formated_type, "image/gif");
-    else if (STRCMP("jpeg", ext) || STRCMP("jpg", ext))
-        strcpy(http_formated_type, "image/jpeg");
-    else if (STRCMP("png", ext))
-        strcpy(http_formated_type, "image/png");
-    else if (STRCMP("mpeg", ext) || STRCMP("mpg", ext))
-        strcpy(http_formated_type, "video/mpeg");
-    else if (STRCMP("doc", ext) || STRCMP("docx", ext))
-        strcpy(http_formated_type, "application/msword");
-    else if (STRCMP("pdf", ext))
-        strcpy(http_formated_type, "application/pdf");
-    else if (STRCMP("css", ext))
-        strcpy(http_formated_type, "text/css"); 
-    else if (STRCMP("txt", ext))
-        strcpy(http_formated_type, "text/plain");
-    else{
-        LOG_ERR("Extension de archivo MIME no soportada: %s", ext);
-        return -1;
-    }
-    return 0;
-}
-
-char* get_args_for_get(char* init_path, char* extracted_args){
+char* get_args_for_get(char* init_path, char* extracted_args)
+{
     if(!init_path || !extracted_args) return NULL;
 
     if(strstr(init_path, "?")){
@@ -427,7 +375,6 @@ char* get_args_for_get(char* init_path, char* extracted_args){
         char* final_path = malloc(strlen(init_path)+1);
         if(!final_path) return NULL;
 
-        /* Get args */
         tok = strtok(init_path, "?");
         strcpy(final_path, tok);
         memset(extracted_args, 0, sizeof(extracted_args));
@@ -447,7 +394,8 @@ char* get_args_for_get(char* init_path, char* extracted_args){
     return init_path;
 }
 
-void get_args_for_post(char* args_in, char* args_out){
+void get_args_for_post(char* args_in, char* args_out)
+{
     char* tok;
 
     memset(args_out, 0, sizeof(args_out));
@@ -484,12 +432,11 @@ void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_co
             sprintf(exec, "php %s", path);
     }
 
-    LOG_INFO("Se va a ejecutar el script: %s", exec);
+    LOG_INFO("Executing script: %s", exec);
 
     res_exec = popen(exec, "r");
     if (!res_exec) {
-        LOG_ERR("No se ha podido ejecutar el script %s", path);
-        /* Enviar error 500 Internal Error */
+        LOG_ERR("Couldn't execute script %s", path);
         Http_response *error = http_response_get_error_response(ERR_500);
         httpresponse_send_error(error, cli_fd);
         httpresponse_free(error);
@@ -503,45 +450,13 @@ void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_co
     *size += content_len_int;
 
     if(content_aux) free(content_aux);
-    //pclose(res_exec);
-}
-
-char *read_file_from_FILE(FILE *fp)
-{
-    char *extension = NULL;
-
-    if(!fp) return NULL;
-
-    char *data = calloc(1, sizeof(char));
-    if(!data) return NULL;
-
-    char *line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    while ((read = getline(&line, &len, fp)) != -1) {
-        data = realloc(data, (strlen(data) + strlen(line) + 1) * sizeof(char));
-        if(!data){
-            fclose(fp);
-            if (line) free(line);
-            return NULL;
-        }
-        strcat(data, line);
-    }
-
-    fclose(fp);
-
-    if (line)
-        free(line);
-
-    return data;
 }
 
 void httpresponse_send_response(Http_request *req, Http_response *res, int cli_fd, char* path, char* ext, char* args_get, char* args_post)
 {   
     if(!res || !req) return;
 
-    char responseASCII[CONTENT_SIZE_AUX];  // Contenido ASCII de la response
+    char responseASCII[CONTENT_SIZE_AUX];
 
     if(is_file_script(ext) == 0){
         long res_size;
@@ -552,14 +467,12 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
 
         exec_script(cli_fd, path, args, ext, content, &res_size);
         
-        /* Guardar en http response para los headers */
         res->content = malloc(strlen(content)+1);
         if(!res->content) return;
         strcpy(res->content, content);
 
         http_response_set_headers(res, path, ext, SCRIPT_EXECUTED);
 
-        /* Status line := HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
         sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%s%s%s%s\r\n%s\r\n",
                                 res->version, res->code, res->message,
                                 res->headers[0],                        // Date
@@ -569,30 +482,26 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
                                 res->headers[4],                        // Content-Type
                                 content
                                 );
-        /* Enviar response por socket de cliente */
         int response_len = strlen(responseASCII);
         if (sendall(cli_fd, responseASCII, &response_len) == -1) {
             perror("send");
-            LOG_ERR("No se pudo enviar respuesta HTTP");
+            LOG_ERR("Couldn't send HTTP response");
             return;
         }
     }else{
         http_response_set_headers(res, path, ext, SCRIPT_NOT_EXECUTED);
-
-        /* Status line := HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
         sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%s%s%s%s\r\n",
                                 res->version, res->code, res->message,
                                 res->headers[0],                        // Date
                                 res->headers[1],                        // Server
                                 res->headers[2],                        // Last-Modified
                                 res->headers[3],                        // Content-Length
-                                res->headers[4]                        // Content-Type
+                                res->headers[4]                         // Content-Type
                                 );
-        /* Enviar response por socket de cliente */
         int response_len = strlen(responseASCII);
         if (sendall(cli_fd, responseASCII, &response_len) == -1) {
             perror("send");
-            LOG_ERR("No se pudo enviar respuesta HTTP");
+            LOG_ERR("Couldn't send HTTP response");
             return;
         }
 
@@ -612,9 +521,8 @@ void httpresponse_send_error(Http_response *res, int cli_fd)
 {   
     if(!res) return;
 
-    char responseASCII[CONTENT_SIZE_AUX];  // Contenido ASCII de la response
+    char responseASCII[CONTENT_SIZE_AUX];
 
-    /* Status line := HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
     sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%s%s%s%s\r\n\r\n%s\r\n",
                             res->version, res->code, res->message,
                             res->headers[0],                        // Date
@@ -625,25 +533,20 @@ void httpresponse_send_error(Http_response *res, int cli_fd)
                             res->content
                             );
     send(cli_fd, responseASCII, strlen(responseASCII), 0);
-
-    return;
 }
 
 void httpresponse_send_options(Http_response *res, int cli_fd)
 {   
     if(!res) return;
 
-    char responseASCII[CONTENT_SIZE_AUX];  // Contenido ASCII de la response
+    char responseASCII[CONTENT_SIZE_AUX];
 
-    /* Status line := HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
     sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%sContent-Length: 0\r\nAllow: GET, POST, OPTIONS\r\n\r\n",
                             res->version, res->code, res->message,
                             res->headers[0],                        // Date
                             res->headers[1]                         // Server
                             );
     send(cli_fd, responseASCII, strlen(responseASCII), 0);
-
-    return;
 }
 
 void http_response_set_error(HTTPErrorCode err_code, Http_response *response)
@@ -659,12 +562,19 @@ void http_response_set_error(HTTPErrorCode err_code, Http_response *response)
             break;
         case ERR_500: 
             response->code = 500;
-            strcpy(response->message, "Internal Error");
+            strcpy(response->message, "Internal Server Error");
+            break;
+        case ERR_501: 
+            response->code = 501;
+            strcpy(response->message, "Not Implemented");
+            break;
+        case ERR_505: 
+            response->code = 505;
+            strcpy(response->message, "HTTP Version Not Supported");
             break;
         default:
             return;
     }
-    return;
 }
 
 Http_response *http_response_get_error_response(HTTPErrorCode err_code)
@@ -675,30 +585,23 @@ Http_response *http_response_get_error_response(HTTPErrorCode err_code)
 
     http_response_set_error(err_code, response);
 
+    char* signature = getenv(SIGNATURE_ENV);
+
     char *html_err = "<html>\n"
                      "<head><title>%d %s</title></head>\n"
                      "<body>\n"
                      "<center><h1>%d %s</h1></center>\n"
-                     "<hr><center>Mapache v/1.0.1</center>\n"
+                     "<hr><center>%s v/2.0</center>\n"
                      "</body>\n"
                      "</html>";
-    char *html_err_c = calloc(1, strlen(html_err));
-    sprintf(html_err_c, html_err, 
+    char *html_err_c = calloc(1, strlen(html_err)*2);
+    sprintf(html_err_c, html_err,
             response->code, response->message,
-            response->code, response->message);
+            response->code, response->message,
+            signature);
     
     response->content = html_err_c;
 
     http_response_set_headers(response, NULL, NULL, -1);
     return response;
-}
-
-int is_file_script(char* ext) {
-    if(!ext)
-        return -1;
-    
-    if(STRCMP("py", ext) || STRCMP("php", ext))
-        return 0;
-
-    return 1;
 }

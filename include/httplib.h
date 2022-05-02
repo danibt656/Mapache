@@ -4,18 +4,24 @@
 #include "picohttpparser.h"
 #include "libsocket.h"
 #include "liblog.h"
+#include "mime.h"
+#include "io.h"
 
 #include <string.h>
 #include <assert.h>
 #include <sys/types.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 /* HTTP versions (1.0, 1.1) */
 #define HTTP_V_0 0
 #define HTTP_V_1 1
 
-#define HTTP_VALID 0
+#define HTTP_VALID 999
 #define HTTP_INVALID 1
 
 #define SCRIPT_EXECUTED 0
@@ -33,6 +39,8 @@
 
 #define EXTENSION_SIZE 5    // File extension
 #define HEADER_SIZE 128     // HTTP Reply Headers size
+
+#define AUX_SIZE 2048
 
 // ****************************************************************************
 //                                 HTTP REQUEST
@@ -72,7 +80,7 @@ int httprequest_set_all(Http_request* req,
                          int num_headers, 
                          struct phr_header *headers);
 
-int check_http_method(char *method);
+int check_http_method_support(char *method);
 
 void httprequest_print(Http_request* req);
 
@@ -87,9 +95,11 @@ Http_response* httpresponse_init();
 void httpresponse_free(Http_response* res);
 
 typedef enum {
-    ERR_400,      // 400 Bad Request
-    ERR_404,      // 404 Not Found
-    ERR_500       // 500 Internal Error
+    ERR_400,
+    ERR_404,
+    ERR_500,
+    ERR_501,
+    ERR_505
 } HTTPErrorCode;
 
 /**
@@ -109,8 +119,6 @@ void http_response_eval_request(Http_request *request, int cli_fd);
  */
 void http_response_date(char *buf, size_t buf_len, struct tm *tm);
 int http_response_date_now(char *buf, size_t buf_len);
-
-char *get_filename_extension(char *filename);
 
 char *read_file(const char *filename);
 
@@ -135,17 +143,6 @@ char* get_args_for_get(char* init_path, char* extracted_args);
  * 
 */
 void get_args_for_post(char* args_in, char* args_out);
-
-/**
- * Given a file extension, return its MIME Content Type
- * 
- * @param ext                   Extension
- * @param http_formated_type    HTTP Content-Type
- * 
- * @return  0 si soportada.
- *          -1 de lo contrario.
-*/
-int get_content_type(char* ext, char* http_formated_type);
 
 /**
  * Set headers for HTTP response
@@ -179,17 +176,6 @@ void http_response_set_headers(Http_response* response, char *path, char *ext, i
  * 
 */
 void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size);
-
-/**
- * Check if file extension is a supported script.
- * 
- * @param ext   File extension
- * 
- * @return  0 if it's a script
- *          1 if not 
- *         -1 if error
- */
-int is_file_script(char* ext);
 
 /**
  * Send HTTP response

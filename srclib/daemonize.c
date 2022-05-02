@@ -1,7 +1,6 @@
 #include "../include/daemonize.h"
 
-/* Funciona para daemonizar el proceso actual */
-void do_daemon()
+void do_daemon(char* signature)
 {
     pid_t pid = 0;
 
@@ -11,21 +10,24 @@ void do_daemon()
         exit(EXIT_FAILURE);
     }
     if (pid > 0)
-        exit(EXIT_SUCCESS);     // salir de padre
+        exit(EXIT_SUCCESS);     // exit father
 
-    /* Proceso hijo */
+    /* Child process */
     LOG_INFO("Demonizando servidor ...");
 
-    /* Crear nuevo SessionID para hijo */
+    /* Create new SessionID for child */
     if (setsid() < 0) {
         LOG_ERR("Error creando nuevo SessionID para proceso hijo");
         exit(EXIT_FAILURE);
     }
 
-    /*Cambiar la mascara del proceso para que sea accesible a cualquiera */
+    /* Change Name of child */
+    prctl(PR_SET_NAME, signature, NULL, NULL);
+
+    /* Change mask so child is accessible to anybody */
     umask((mode_t) 0);
 
-    /* Establecer el directorio raiz para el demonio */
+    /* Set daemon at root dir */
     if ( (chdir("/")) < 0) {
         LOG_ERR("Error cambiando el directorio: \"/\"");
         exit(EXIT_FAILURE);

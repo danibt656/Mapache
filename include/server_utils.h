@@ -1,9 +1,3 @@
-/**
- *  Cabeceras de utilidad para el servidor
- *  
- *  @author Carlos Anivarro Batiste
- *  @author Daniel Barahona Martin
-*/
 #ifndef SERVER_UTILS_H
 #define SERVER_UTILS_H
 
@@ -11,6 +5,7 @@
 #include "httplib.h"
 #include "picohttpparser.h"
 #include "liblog.h"
+#include "io.h"
 
 int init_server(int port, int backlog);
 
