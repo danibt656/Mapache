@@ -43,7 +43,7 @@ And for Valgrind checking:
 $ make val
 ```
 
-**IMPORTANT DEPENDENCIES**: you need to install the `libconfuse` library for parsing configuration files. You can refer to <a href=https://github.com/libconfuse/libconfuse>its GitHub page </a> for install instructions, but basically you can do well with this command (for Debian-based systems):
+**IMPORTANT DEPENDENCIES**: you need to install the *libconfuse* library for parsing configuration files. You can refer to <a href=https://github.com/libconfuse/libconfuse>its GitHub page </a> for install instructions, but basically you can do well with this command (for Debian-based systems):
 
 ```
 $ sudo apt install libconfuse-dev
@@ -67,7 +67,7 @@ $ ./server -h
 
 ### 1.2. How to check an example?
 
-This repo contains a `web/` folder with both the Mapache start page (for checking if it is running) and a Benchmarking page. To see the main page, just start the server and navigate to this URL in your browser:
+This repo contains a [`web/`](https://github.com/danibt656/Mapache/tree/main/web) folder with both the Mapache start page (for checking if it is running) and a Benchmarking page. To see the main page, just start the server and navigate to this URL in your browser:
 
 `http://localhost:8080/home.html`
 
