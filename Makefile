@@ -5,7 +5,7 @@ CFLAGS = -g -std=gnu99 -Iinclude -I .
 DOBJ := obj
 
 LINK = -lconfuse
-SERVER = $(DOBJ)/server.o $(DOBJ)/picohttpparser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o
+SERVER = $(DOBJ)/server.o $(DOBJ)/picohttpparser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o $(DOBJ)/dir.o
 LIBS = lib/libpico.a lib/libsocket.a
 LIBPICO = -Llib/ -lpico
 LIBSOCK = -Llib/ -lsocket
@@ -47,6 +47,9 @@ $(DOBJ)/mime.o: srclib/mime.c include/mime.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(DOBJ)/io.o: srclib/io.c include/io.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(DOBJ)/dir.o: srclib/dir.c include/dir.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Libraries

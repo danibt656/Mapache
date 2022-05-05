@@ -63,8 +63,8 @@ void launch_service(int cli_fd)
 
     request = httprequest_parse_and_map(cli_fd);
 
-    if (request)
-        httprequest_print(request);
+    // if (request)
+    //     httprequest_print(request);
 
     if (request)
         http_response_eval_request(request, cli_fd);

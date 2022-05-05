@@ -31,14 +31,16 @@
 #define DATE_SIZE 32
 #define PATH_SIZE 128
 #define SCRIPT_CMD_SIZE 128
-#define NUM_HEADERS 128             // Max number of allowed headers
+#define NUM_HEADERS 128         // Max number of allowed headers
 #define TAM_HEADER 2048
 #define POST_ARGS_SIZE 1024
-#define MAX_ARGS_GET_METHOD 16      // MAx number of args for get method
+#define MAX_ARGS_GET_METHOD 16  // Max number of args for get method
 #define CONTENT_SIZE_AUX 32768
 
-#define EXTENSION_SIZE 5    // File extension
-#define HEADER_SIZE 128     // HTTP Reply Headers size
+#define DIR_CODE "DIR"          // Code for when something is a directory
+
+#define EXTENSION_SIZE 5        // File extension
+#define HEADER_SIZE 128         // HTTP Reply Headers size
 
 #define AUX_SIZE 2048
 
@@ -219,5 +221,12 @@ void httpresponse_send_error(Http_response *res, int cli_fd);
  * @param cli_fd    Client connection socket
  */
 void httpresponse_send_options(Http_response *res, int cli_fd);
+
+/**
+ * @brief Set the index dir response object onto a HTTP response
+ * 
+ * @param response  The HTTP response struct to fill up its contents
+ */
+void set_index_dir_response(Http_response *response, char* index_dir);
 
 #endif

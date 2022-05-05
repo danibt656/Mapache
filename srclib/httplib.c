@@ -1,5 +1,6 @@
 #include "../include/httplib.h"
 #include "../include/liblog.h"
+#include "../include/dir.h"
 
 
 // ****************************************************************************
@@ -232,6 +233,8 @@ void httpresponse_free(Http_response* res)
 
 void http_response_eval_request(Http_request *request, int cli_fd)
 {
+    char args_for_post[AUX_SIZE]="";
+
     Http_response *response = httpresponse_init(); 
     if(!response) return;
 
@@ -266,12 +269,20 @@ void http_response_eval_request(Http_request *request, int cli_fd)
         return;
     }
 
+    /* If path is a directory, show an Index page */
+    if (path_is_directory(request->path)) {
+        char *index_dir = get_directory_as_index(request->path);
+        set_index_dir_response(response, index_dir);
+        httpresponse_send_response(request, response, cli_fd, request->path, DIR_CODE, args_for_get, args_for_post);
+        //httpresponse_free(response);
+        return;
+    }
+
     /* Get extension from request */
     char *ext = get_filename_extension(path);
     LOG_INFO("Extension: %s", ext);
     
     /* Send response as ASCII */
-    char args_for_post[AUX_SIZE]="";
     if (STRCMP(request->method, "POST"))
         get_args_for_post(request->post_args, args_for_post);
     httpresponse_send_response(request, response, cli_fd, path, ext, args_for_get, args_for_post);
@@ -458,7 +469,9 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
 
     char responseASCII[CONTENT_SIZE_AUX];
 
-    if(is_file_script(ext) == 0){
+    if (is_file_script(ext) == 0) {
+        LOG_INFO("Sending script...");
+
         long res_size;
         char content[CONTENT_SIZE_AUX - 1024];
         
@@ -488,7 +501,25 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
             LOG_ERR("Couldn't send HTTP response");
             return;
         }
-    }else{
+    } else if (STRCMP(ext, DIR_CODE)) {
+        LOG_INFO("Sending directory index...");
+        sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%s%s%s%s\r\n%s\r\n",
+                                res->version, res->code, res->message,
+                                res->headers[0],                        // Date
+                                res->headers[1],                        // Server
+                                res->headers[2],                        // Last-Modified
+                                res->headers[3],                        // Content-Length
+                                res->headers[4],                        // Content-Type
+                                res->content
+                                );
+        int response_len = strlen(responseASCII);
+        if (sendall(cli_fd, responseASCII, &response_len) == -1) {
+            perror("send");
+            LOG_ERR("Couldn't send HTTP response");
+            return;
+        }
+    } else {
+        LOG_INFO("Sending page...");
         http_response_set_headers(res, path, ext, SCRIPT_NOT_EXECUTED);
         sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%s%s%s%s\r\n",
                                 res->version, res->code, res->message,
@@ -604,4 +635,13 @@ Http_response *http_response_get_error_response(HTTPErrorCode err_code)
 
     http_response_set_headers(response, NULL, NULL, -1);
     return response;
+}
+
+void set_index_dir_response(Http_response *response, char* index_dir)
+{
+    if (!response || !index_dir)
+        return;
+    
+    response->content = index_dir;
+    http_response_set_headers(response, NULL, NULL, -1);
 }
