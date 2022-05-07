@@ -17,6 +17,7 @@
 /* Environment variables for server signature & root */
 #define SIGNATURE_ENV "SIGNATURE_ENV"
 #define ROOT_ENV "ROOT_ENV"
+#define ROOT_SHORT "ROOT_SHORT"
 /* Listen port */
 #define PORT 8080
 /* Data recv buffer length */

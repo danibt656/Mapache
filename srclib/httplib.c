@@ -6,15 +6,6 @@
 // ****************************************************************************
 //                                 HTTP Request
 // ****************************************************************************
-struct _Http_request {
-    char method[METHOD_SIZE];               // Method (GET, POST, OPTIONS)
-    char path[PATH_SIZE];                   // Path (URL/URI)
-    char post_args[POST_ARGS_SIZE];         // Arguments (if method == POST)
-    struct phr_header headers[NUM_HEADERS]; // Headers
-    int num_headers;                        // Num of headers
-    int version;                            // HTTP version
-    int size;                               // Request size
-};
 
 Http_request* httprequest_init()
 {
@@ -136,6 +127,12 @@ int httprequest_set_all(Http_request* req,
     /* Path */
     char aux2[AUX_SIZE];
     sprintf(aux2, "%.*s", (int) path_len, path);
+        /* Set request path env variable */
+    if (setenv("REQ_PATH_ENV", aux2, 1) < 0) {
+        perror("setenv");
+        LOG_ERR("Couldn't set REQ_PATH_ENV to \'%s\'", aux2);
+        exit(EXIT_FAILURE);
+    }
         /* Concatenate with server root (absolute path) */
     path_root = getenv(ROOT_ENV);
     sprintf(aux, "%s%s", path_root, aux2);
@@ -195,14 +192,6 @@ void httprequest_print(Http_request* req)
 // ****************************************************************************
 //                                 HTTP RESPONSE
 // ****************************************************************************
-struct _Http_response {
-    int version;                            // HTTP version
-    int code;                               // Response code (200, 400, 404, 500)
-    char message[PATH_SIZE];                // Response text (OK, Not Found...)
-    char headers[NUM_HEADERS][HEADER_SIZE]; // Headers
-    int num_headers;                        // Num of headers
-    char *content;                          // Response content
-};
 
 Http_response* httpresponse_init()
 {
@@ -302,8 +291,8 @@ void http_response_set_headers(Http_response* response, char *path, char *ext, i
     memset(buf, 0, sizeof(buf));
 
     /* Server header */
-    char *signature = NULL;
         /* Retrieve SIGNATURE_ENV */
+    char *signature = NULL;
     signature = getenv(SIGNATURE_ENV);
     char server[HEADER_SIZE];
     sprintf(server, "Server: %s/1.0.1 (Linux)\r\n", signature);

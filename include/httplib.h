@@ -47,7 +47,15 @@
 // ****************************************************************************
 //                                 HTTP REQUEST
 // ****************************************************************************
-typedef struct _Http_request Http_request;
+typedef struct _Http_request {
+    char method[METHOD_SIZE];               // Method (GET, POST, OPTIONS)
+    char path[PATH_SIZE];                   // Path (URL/URI)
+    char post_args[POST_ARGS_SIZE];         // Arguments (if method == POST)
+    struct phr_header headers[NUM_HEADERS]; // Headers
+    int num_headers;                        // Num of headers
+    int version;                            // HTTP version
+    int size;                               // Request size
+} Http_request;
 
 Http_request* httprequest_init();
 
@@ -89,7 +97,14 @@ void httprequest_print(Http_request* req);
 // ****************************************************************************
 //                                 HTTP RESPONSE
 // ****************************************************************************
-typedef struct _Http_response Http_response;
+typedef struct _Http_response {
+    int version;                            // HTTP version
+    int code;                               // Response code (200, 400, 404, 500)
+    char message[PATH_SIZE];                // Response text (OK, Not Found...)
+    char headers[NUM_HEADERS][HEADER_SIZE]; // Headers
+    int num_headers;                        // Num of headers
+    char *content;                          // Response content
+} Http_response;
 
 
 Http_response* httpresponse_init();

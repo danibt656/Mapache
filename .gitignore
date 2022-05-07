@@ -1,4 +1,13 @@
 .vscode/
+.vim/
+
 ./server
 lib/
 obj/
+
+*.cflags
+*.config
+*.creator
+*.cxxflags
+*.files
+*.includes

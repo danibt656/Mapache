@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         server_signature = DEFAULT_SIGNATURE;
     if (setenv(SIGNATURE_ENV, server_signature, 1) < 0) {
         perror("setenv");
-        LOG_ERR("No se pudo poner 'SIGNATURE_ENV' a %s", server_signature);
+        LOG_ERR("Couldn't set SIGNATURE_ENV as \'%s\'", server_signature);
         exit(EXIT_FAILURE);
     }
     getcwd(server_abs_route, sizeof(server_abs_route));
@@ -131,6 +131,11 @@ int main(int argc, char *argv[])
     strcat(server_abs_route, server_root);
         /* Set server root as environment variable */
     if (setenv(ROOT_ENV, server_abs_route, 1) < 0) {
+        perror("setenv");
+        LOG_ERR("Couldn't set ROOT_ENV as \'%s\'", server_abs_route);
+        exit(EXIT_FAILURE);
+    }
+    if (setenv(ROOT_SHORT, server_root, 1) < 0) {
         perror("setenv");
         LOG_ERR("Couldn't set ROOT_ENV as \'%s\'", server_root);
         exit(EXIT_FAILURE);
