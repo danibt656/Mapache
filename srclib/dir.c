@@ -1,4 +1,5 @@
 #include "../include/dir.h"
+#include "../include/mime.h"
 
 
 int path_is_directory(char *path)
@@ -31,13 +32,17 @@ char* get_directory_as_index(char *dirpath)
     char *index_template = "<html>\n"
                     "<head>"
                            "<title>Index of %s</title>\n"
-                           "<style>table{ font-family:monospace; border-collapse: separate; border-spacing: 40px 5px;}</style>\n"
+                           "<style>\n"
+                                "h2{ font-family: sans-serif; }\n"
+                                "table{ font-family:monospace; border-collapse: separate; border-spacing: 40px 5px;}\n"
+                           "</style>\n"
                     "</head>\n"
                     "<body>\n"
                     "<h2>Index of %s</h2>\n"
                     "<hr>\n"
                     "<table>\n"
                         "<tr>\n"
+                        "<th></th>"
                         "<th>Name</th>\n"
                         "<th>Last Modified</th>\n"
                         "<th>Type</th>\n"
@@ -45,6 +50,7 @@ char* get_directory_as_index(char *dirpath)
                         "</tr>\n";
 
     char *index_template_row = "<tr>\n"
+                                    "<td><img src=\"%s\" height=25vh></td>\n"
                                     "<td><a href=\"%s%s\">%s</a></td>\n"
                                     "<td>Date</td>\n"
                                     "<td>%c</td>\n"
@@ -57,7 +63,7 @@ char* get_directory_as_index(char *dirpath)
 
     /* Add start of index */
     size_t needed = snprintf(NULL, 0, index_template, dirpath_short, dirpath_short) + 1;
-    html_index = (char*)realloc(html_index, needed);
+    html_index = (char*)malloc(needed);
     sprintf(html_index, index_template, dirpath_short, dirpath_short);
 
     /* Add files as rows */
@@ -70,28 +76,35 @@ char* get_directory_as_index(char *dirpath)
     }
     size_t needed_row = 0;
     struct stat statbuf, emptystat;
-    char type = 0;
+    char type = FILETYPE;
     char p_aux[1024] = "";
+    char* icon_url = NULL;
     while ((dir = readdir(d)) != NULL) {
+        /* Skip parent & current directory links */
         if (STRCMP(dir->d_name, ".") || STRCMP(dir->d_name, ".."))
             continue;
 
+        /* Decide if it's a file or a directory */
         sprintf(p_aux, "%s%s", dirpath, dir->d_name);
-        if (stat(dirpath, &statbuf) != 0) {
+        if (stat(p_aux, &statbuf) != 0) {
             perror("stat");
             return NULL;
         }
         if (S_ISREG(statbuf.st_mode))
-            type = 'f';
+            type = FILETYPE;
         else if (S_ISDIR(statbuf.st_mode))
-            type = 'D';
+            type = DIRTYPE;
         statbuf = emptystat;
 
-        needed_row = snprintf(NULL, 0, index_template_row, dirpath, dir->d_name, dir->d_name, type, dir->d_reclen) + 1;
-        html_index_row = (char*)realloc(html_index_row, needed_row);
+        /* Decide icon to show */
+        icon_url = get_icon_url_from_ext(get_filename_extension(p_aux), type);
+
+        /* Add row to HTML table index */
+        needed_row = snprintf(NULL, 0, index_template_row, icon_url, request_path, dir->d_name, dir->d_name, type, dir->d_reclen) + 1;
+        html_index_row = (char*)malloc(needed_row);
         needed += needed_row;
         html_index = (char*)realloc(html_index, needed);
-        sprintf(html_index_row, index_template_row, request_path, dir->d_name, dir->d_name, type, dir->d_reclen);
+        sprintf(html_index_row, index_template_row, icon_url, request_path, dir->d_name, dir->d_name, type, dir->d_reclen);
         strcat(html_index, html_index_row);
         free(html_index_row);
         html_index_row = NULL;
@@ -100,7 +113,7 @@ char* get_directory_as_index(char *dirpath)
 
     /* Add end of index HTML */
     size_t needed_end = snprintf(NULL, 0, index_template_end, NULL) + 1;
-    html_index_end = (char*)realloc(html_index_end, needed_end);
+    html_index_end = (char*)malloc(needed_end);
     needed += needed_end;
     html_index = (char*)realloc(html_index, needed);
     sprintf(html_index_end, index_template_end, NULL);
@@ -121,3 +134,39 @@ char* get_shortened_dirpath(char *dirpath)
     char *shortened = strstr(dirpath, server_root);
     return shortened;
 }
+
+char* get_icon_url_from_ext(char* ext, char type)
+{
+    if (type != DIRTYPE && type != FILETYPE)
+        return UNK_EXT_ICON;
+
+    if (type == DIRTYPE)
+        return DIR_ICON;
+
+    if (STRCMP(ext, "html") || STRCMP(ext, "htm"))
+        return HTML_FILE_ICON;
+    else if (STRCMP(ext, "c"))
+        return C_FILE_ICON;
+    else if (STRCMP(ext, "c++") || STRCMP(ext, "cpp"))
+        return CPP_FILE_ICON;
+    else if (STRCMP(ext, "py"))
+        return PY_FILE_ICON;
+    else if (STRCMP(ext, "jpg") || STRCMP(ext, "jpeg") || STRCMP(ext, "png") || STRCMP(ext, "svg"))
+        return IMG_FILE_ICON;
+    else if (STRCMP(ext, "mp3") || STRCMP(ext, "mp4") || STRCMP(ext, "mpeg") || STRCMP(ext, "mpeg3") || STRCMP(ext, "mpeg4") || STRCMP(ext, "avi"))
+        return VIDEO_FILE_ICON;
+    else if (STRCMP(ext, "gif"))
+        return GIF_FILE_ICON;
+    else if (STRCMP(ext, "pdf"))
+        return PDF_FILE_ICON;
+    else if (STRCMP(ext, "txt") || STRCMP(ext, "dat") || STRCMP(ext, "conf") || STRCMP(ext, "csv") || STRCMP(ext, "tsv"))
+        return TXT_FILE_ICON;
+    else if (STRCMP(ext, "doc") || STRCMP(ext, "docx"))
+        return DOC_FILE_ICON;
+
+    return UNK_EXT_ICON;
+}
+
+
+
+

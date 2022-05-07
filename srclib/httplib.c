@@ -263,7 +263,6 @@ void http_response_eval_request(Http_request *request, int cli_fd)
         char *index_dir = get_directory_as_index(request->path);
         set_index_dir_response(response, index_dir);
         httpresponse_send_response(request, response, cli_fd, request->path, DIR_CODE, args_for_get, args_for_post);
-        //httpresponse_free(response);
         return;
     }
 
