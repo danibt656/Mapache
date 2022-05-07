@@ -5,7 +5,7 @@ CFLAGS = -g -std=gnu99 -Iinclude -I .
 DOBJ := obj
 
 LINK = -lconfuse
-SERVER = $(DOBJ)/server.o $(DOBJ)/picohttpparser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o $(DOBJ)/dir.o
+SERVER = $(DOBJ)/server.o $(DOBJ)/map_parser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o $(DOBJ)/dir.o
 LIBS = lib/libpico.a lib/libsocket.a
 LIBPICO = -Llib/ -lpico
 LIBSOCK = -Llib/ -lsocket
@@ -34,7 +34,7 @@ $(DOBJ)/daemonize.o: srclib/daemonize.c include/daemonize.h include/liblog.h
 $(DOBJ)/libsocket.o: srclib/libsocket.c include/libsocket.h include/liblog.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(DOBJ)/picohttpparser.o: srclib/picohttpparser.c include/picohttpparser.h
+$(DOBJ)/map_parser.o: srclib/map_parser.c include/map_parser.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(DOBJ)/liblog.o: srclib/liblog.c include/liblog.h
@@ -53,7 +53,7 @@ $(DOBJ)/dir.o: srclib/dir.c include/dir.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Libraries
-lib/libpico.a: $(DOBJ)/picohttpparser.o
+lib/libpico.a: $(DOBJ)/map_parser.o
 	ar -rv $@ $^
 
 lib/libsocket.a: $(DOBJ)/libsocket.o

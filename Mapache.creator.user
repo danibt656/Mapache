@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.11.0, 2022-05-07T17:20:33. -->
+<!-- Written by QtCreator 4.11.0, 2022-05-07T21:02:31. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -69,11 +69,9 @@
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/d/workspace/Mapache</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
-      <valuelist type="QVariantList" key="GenericProjectManager.GenericMakeStep.BuildTargets">
-       <value type="QString">all</value>
-      </valuelist>
+      <valuelist type="QVariantList" key="GenericProjectManager.GenericMakeStep.BuildTargets"/>
       <value type="bool" key="GenericProjectManager.GenericMakeStep.Clean">false</value>
-      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeArguments"></value>
+      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeArguments">clean; make all</value>
       <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeCommand"></value>
       <value type="bool" key="GenericProjectManager.GenericMakeStep.OverrideMakeflags">false</value>
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -180,7 +178,7 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable"></value>
+    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/d/workspace/Mapache/server</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey"></value>
     <value type="QString" key="RunConfiguration.Arguments"></value>

@@ -249,7 +249,7 @@ void http_response_eval_request(Http_request *request, int cli_fd)
     }
 
     if (access(path, F_OK) != 0) {
-        LOG_ERR("404 File %s not found", path);
+        LOG_ERR("404 \'%s\' not found", path);
         httpresponse_free(response);
         free(args_for_get);
         Http_response *error = http_response_get_error_response(ERR_404);
@@ -260,6 +260,12 @@ void http_response_eval_request(Http_request *request, int cli_fd)
 
     /* If path is a directory, show an Index page */
     if (path_is_directory(request->path)) {
+        size_t len = strlen(request->path);
+        /* If it's a directory, enforce that ends with '/' */
+        if (request->path[len-1] != '/') {
+            char _s = '/';
+            strncat(request->path, &_s, 1);
+        }
         char *index_dir = get_directory_as_index(request->path);
         set_index_dir_response(response, index_dir);
         httpresponse_send_response(request, response, cli_fd, request->path, DIR_CODE, args_for_get, args_for_post);
@@ -303,7 +309,6 @@ void http_response_set_headers(Http_response* response, char *path, char *ext, i
     long con_len;
     if (path) {
         struct stat attr;
-
         stat(path, &attr);
         strftime(last_mod_content, HEADER_SIZE, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&attr.st_mtime));
         sprintf(last_mod, "Last-Modified: %s\r\n", last_mod_content);

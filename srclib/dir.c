@@ -4,12 +4,15 @@
 
 int path_is_directory(char *path)
 {
-    if (!path)
-        return -1;
+    if (!path) return -1;
 
-    if (path[strlen(path)-1] == '/')
-        return 1;
-    return 0;
+    struct stat statbuf;
+    if (stat(path, &statbuf) != 0) {
+        perror("stat");
+        return -1;
+    }
+
+    return S_ISDIR(statbuf.st_mode);
 }
 
 char* get_directory_as_index(char *dirpath)
@@ -94,7 +97,6 @@ char* get_directory_as_index(char *dirpath)
             type = FILETYPE;
         else if (S_ISDIR(statbuf.st_mode))
             type = DIRTYPE;
-        statbuf = emptystat;
 
         /* Decide icon to show */
         icon_url = get_icon_url_from_ext(get_filename_extension(p_aux), type);
