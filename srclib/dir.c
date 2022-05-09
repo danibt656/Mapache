@@ -54,7 +54,7 @@ char* get_directory_as_index(char *dirpath)
 
     char *index_template_row = "<tr>\n"
                                     "<td><img src=\"%s\" height=25vh></td>\n"
-                                    "<td><a href=\"%s%s\">%s</a></td>\n"
+                                    "<td><a href=\"%s%s%s\">%s</a></td>\n"      // path + slash¿ + file
                                     "<td>Date</td>\n"
                                     "<td>%c</td>\n"
                                     "<td>%d</td>\n"
@@ -82,6 +82,7 @@ char* get_directory_as_index(char *dirpath)
     char type = FILETYPE;
     char p_aux[1024] = "";
     char* icon_url = NULL;
+    char* slash = "";
     while ((dir = readdir(d)) != NULL) {
         /* Skip parent & current directory links */
         if (STRCMP(dir->d_name, ".") || STRCMP(dir->d_name, ".."))
@@ -101,12 +102,17 @@ char* get_directory_as_index(char *dirpath)
         /* Decide icon to show */
         icon_url = get_icon_url_from_ext(get_filename_extension(p_aux), type);
 
+        /* Append slash if path doesn't end in / */
+        slash = "";
+        if (request_path[strlen(request_path)-1] != '/')
+            slash = "/";
+
         /* Add row to HTML table index */
-        needed_row = snprintf(NULL, 0, index_template_row, icon_url, request_path, dir->d_name, dir->d_name, type, dir->d_reclen) + 1;
+        needed_row = snprintf(NULL, 0, index_template_row, icon_url, request_path, slash, dir->d_name, dir->d_name, type, dir->d_reclen) + 1;
         html_index_row = (char*)malloc(needed_row);
         needed += needed_row;
         html_index = (char*)realloc(html_index, needed);
-        sprintf(html_index_row, index_template_row, icon_url, request_path, dir->d_name, dir->d_name, type, dir->d_reclen);
+        sprintf(html_index_row, index_template_row, icon_url, request_path, slash, dir->d_name, dir->d_name, type, dir->d_reclen);
         strcat(html_index, html_index_row);
         free(html_index_row);
         html_index_row = NULL;
@@ -147,12 +153,16 @@ char* get_icon_url_from_ext(char* ext, char type)
 
     if (STRCMP(ext, "html") || STRCMP(ext, "htm"))
         return HTML_FILE_ICON;
+    else if (STRCMP(ext, "css"))
+        return HTML_FILE_ICON;
     else if (STRCMP(ext, "c"))
         return C_FILE_ICON;
     else if (STRCMP(ext, "c++") || STRCMP(ext, "cpp"))
         return CPP_FILE_ICON;
     else if (STRCMP(ext, "py"))
         return PY_FILE_ICON;
+    else if (STRCMP(ext, "php"))
+        return PHP_FILE_ICON;
     else if (STRCMP(ext, "jpg") || STRCMP(ext, "jpeg") || STRCMP(ext, "png") || STRCMP(ext, "svg"))
         return IMG_FILE_ICON;
     else if (STRCMP(ext, "mp3") || STRCMP(ext, "mp4") || STRCMP(ext, "mpeg") || STRCMP(ext, "mpeg3") || STRCMP(ext, "mpeg4") || STRCMP(ext, "avi"))

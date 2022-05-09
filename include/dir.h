@@ -21,6 +21,7 @@
 #define CPP_FILE_ICON       "https://upload.wikimedia.org/wikipedia/commons/c/cd/Nuvola-inspired_File_Icons_for_MediaWiki-fileicon-cpp.png"
 #define HEAD_FILE_ICON      "https://upload.wikimedia.org/wikipedia/commons/c/ce/Nuvola-inspired_File_Icons_for_MediaWiki-fileicon-h.png"
 #define PY_FILE_ICON        "https://upload.wikimedia.org/wikipedia/commons/3/36/Nuvola-inspired_File_Icons_for_MediaWiki-fileicon-py.png"
+#define PHP_FILE_ICON       "https://www.theasgroups.com/images/subpageimages/php-mysql.png"
 #define HTML_FILE_ICON      "https://upload.wikimedia.org/wikipedia/commons/7/78/Fairytale_html.png"
 #define CSS_FILE_ICON       "https://upload.wikimedia.org/wikipedia/commons/2/26/Nuvola-inspired_File_Icons_for_MediaWiki-fileicon-css.png"
 

@@ -1,6 +1,4 @@
 #include "../include/httplib.h"
-#include "../include/liblog.h"
-#include "../include/dir.h"
 
 
 // ****************************************************************************
@@ -163,14 +161,13 @@ int httprequest_set_all(Http_request* req,
 
 int check_http_method_support(char *method)
 {
-    if (STRCMP(method, "GET"))
+    if (STRCMP(method, "GET") ||
+        STRCMP(method, "POST") ||
+        STRCMP(method, "HEAD") ||
+        STRCMP(method, "OPTIONS")
+        )
         return 0;
-    else if (STRCMP(method, "POST")) 
-        return 0;
-    else if (STRCMP(method, "OPTIONS"))
-        return 0;
-    else
-        return -1;
+    return -1;
 }
 
 void httprequest_print(Http_request* req)
@@ -418,44 +415,6 @@ void get_args_for_post(char* args_in, char* args_out)
     }
 }
 
-void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size)
-{
-    /* Ejecucion del script */
-    char exec[SCRIPT_CMD_SIZE];
-    FILE* res_exec;
-    char* content_aux = NULL;
-    if(STRCMP(ext, "py")){
-        if(!STRCMP(args, ""))
-            sprintf(exec, "python3 %s %s", path, args);
-        else
-            sprintf(exec, "python3 %s", path);
-    }else if(STRCMP(ext, "php")){
-        if(!STRCMP(args, ""))
-            sprintf(exec, "php %s %s", path, args);
-        else
-            sprintf(exec, "php %s", path);
-    }
-
-    LOG_INFO("Executing script: %s", exec);
-
-    res_exec = popen(exec, "r");
-    if (!res_exec) {
-        LOG_ERR("Couldn't execute script %s", path);
-        Http_response *error = http_response_get_error_response(ERR_500);
-        httpresponse_send_error(error, cli_fd);
-        httpresponse_free(error);
-    }
-
-    /* Read content + Content-Lenght */
-    content_aux = read_file_from_FILE(res_exec);
-    strcpy(to_fill_content, content_aux);
-    long content_len_int = strlen(to_fill_content);
-
-    *size += content_len_int;
-
-    if(content_aux) free(content_aux);
-}
-
 void httpresponse_send_response(Http_request *req, Http_response *res, int cli_fd, char* path, char* ext, char* args_get, char* args_post)
 {   
     if(!res || !req) return;
@@ -496,15 +455,26 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
         }
     } else if (STRCMP(ext, DIR_CODE)) {
         LOG_INFO("Sending directory index...");
-        sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%s%s%s%s\r\n%s\r\n",
-                                res->version, res->code, res->message,
-                                res->headers[0],                        // Date
-                                res->headers[1],                        // Server
-                                res->headers[2],                        // Last-Modified
-                                res->headers[3],                        // Content-Length
-                                res->headers[4],                        // Content-Type
-                                res->content
-                                );
+        if (!STRCMP(req->method, "HEAD")) {
+            sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%s%s%s%s\r\n%s\r\n",
+                                    res->version, res->code, res->message,
+                                    res->headers[0],                        // Date
+                                    res->headers[1],                        // Server
+                                    res->headers[2],                        // Last-Modified
+                                    res->headers[3],                        // Content-Length
+                                    res->headers[4],                        // Content-Type
+                                    res->content
+                                    );
+        } else {
+            sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%s%s%s%s\r\n",
+                                    res->version, res->code, res->message,
+                                    res->headers[0],                        // Date
+                                    res->headers[1],                        // Server
+                                    res->headers[2],                        // Last-Modified
+                                    res->headers[3],                        // Content-Length
+                                    res->headers[4]                         // Content-Type
+                                    );
+        }
         int response_len = strlen(responseASCII);
         if (sendall(cli_fd, responseASCII, &response_len) == -1) {
             perror("send");
@@ -529,13 +499,16 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
             return;
         }
 
-        char content_file[CONTENT_SIZE_AUX];
-        int ret, file;
-        file = open(path, O_RDONLY);
-        while ((ret = read(file, content_file, CONTENT_SIZE_AUX)) > 0) {
-            sendall(cli_fd, content_file, &ret);
+        if (!STRCMP(req->method, "HEAD")) {
+            printf("HELLO!\n");
+            char content_file[CONTENT_SIZE_AUX];
+            int ret, file;
+            file = open(path, O_RDONLY);
+            while ((ret = read(file, content_file, CONTENT_SIZE_AUX)) > 0) {
+                sendall(cli_fd, content_file, &ret);
+            }
+            close(file);
         }
-        close(file);
     }
     
     return;

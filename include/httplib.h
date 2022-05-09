@@ -6,6 +6,8 @@
 #include "liblog.h"
 #include "mime.h"
 #include "io.h"
+#include "dir.h"
+#include "cgi.h"
 
 #include <string.h>
 #include <assert.h>
@@ -171,28 +173,6 @@ void get_args_for_post(char* args_in, char* args_out);
  * 
 */
 void http_response_set_headers(Http_response* response, char *path, char *ext, int is_script);
-
-/**
- * Execute a script.
- * 
- * Must be given:
- *  - path  -> Script path without arguments
- *  - ext   -> Script extension (lang)
- *  - args  -> Script arguments
- * 
- * These arguments will be filled:
- *  - to_fill_content   -> Script execution result
- *  - size              -> Result size in bytes
- * 
- * @param cli_fd            Client connection socket
- * @param path              Relative path of script
- * @param args              Script args
- * @param ext               Script file extension (lang)
- * @param to_fill_content   Script execution script
- * @param size              Result size in bytes
- * 
-*/
-void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size);
 
 /**
  * Send HTTP response
