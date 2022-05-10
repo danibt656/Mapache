@@ -34,12 +34,12 @@ char *read_file(const char *filename)
 
 char *read_file_from_FILE(FILE *fp)
 {
-    char *extension = NULL;
-
-    if(!fp) return NULL;
+    if(!fp)
+        return NULL;
 
     char *data = calloc(1, sizeof(char));
-    if(!data) return NULL;
+    if(!data)
+        return NULL;
 
     char *line = NULL;
     size_t len = 0;
@@ -49,7 +49,8 @@ char *read_file_from_FILE(FILE *fp)
         data = realloc(data, (strlen(data) + strlen(line) + 1) * sizeof(char));
         if(!data){
             fclose(fp);
-            if (line) free(line);
+            if (line)
+                free(line);
             return NULL;
         }
         strcat(data, line);
@@ -59,6 +60,7 @@ char *read_file_from_FILE(FILE *fp)
 
     if (line)
         free(line);
+    LOG_INFO("DATA: %s", data);
 
     return data;
 }

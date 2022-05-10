@@ -157,7 +157,7 @@ char* get_icon_url_from_ext(char* ext, char type)
         return HTML_FILE_ICON;
     else if (STRCMP(ext, "c"))
         return C_FILE_ICON;
-    else if (STRCMP(ext, "c++") || STRCMP(ext, "cpp"))
+    else if (STRCMP(ext, "c++") || STRCMP(ext, "cpp") || STRCMP(ext, "cc"))
         return CPP_FILE_ICON;
     else if (STRCMP(ext, "py"))
         return PY_FILE_ICON;

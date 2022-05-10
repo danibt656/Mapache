@@ -18,7 +18,7 @@
 int server_fd;
 
 
-void print_help()
+__attribute__((always_inline)) inline void print_help()
 {   
     char* server_logo = read_file(SERVER_LOGO);
     if(server_logo) printf("%s\n", server_logo);

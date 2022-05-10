@@ -35,6 +35,7 @@ int log_use_colors;
 */
 void liblog_red(FILE *fout);
 void liblog_green(FILE *fout);
+void liblog_bold_yellow(FILE *fout);
 void liblog_reset_color(FILE *fout);
 
 /**

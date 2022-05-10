@@ -3,15 +3,19 @@
 
 void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size)
 {
-    /* Ejecucion del script */
+    if (!cli_fd || !path || !args || !ext) {
+        LOG_ERR("Error executing script");
+        return;
+    }
+
     char exec[SCRIPT_CMD_SIZE];
     FILE* res_exec;
     char* content_aux = NULL;
     if(STRCMP(ext, "py")){
         if(!STRCMP(args, ""))
-            sprintf(exec, "python3 %s %s", path, args);
+            sprintf(exec, "/usr/bin/python3 %s %s", path, args);
         else
-            sprintf(exec, "python3 %s", path);
+            sprintf(exec, "/usr/bin/python %s", path);
     }else if(STRCMP(ext, "php")){
         if(!STRCMP(args, ""))
             sprintf(exec, "php %s %s", path, args);
@@ -23,11 +27,13 @@ void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_co
 
     res_exec = popen(exec, "r");
     if (!res_exec) {
+        perror("popen");
         LOG_ERR("Couldn't execute script %s", path);
         Http_response *error = http_response_get_error_response(ERR_500);
         httpresponse_send_error(error, cli_fd);
         httpresponse_free(error);
     }
+    LOG_INFO("End!");
 
     /* Read content + Content-Lenght */
     content_aux = read_file_from_FILE(res_exec);

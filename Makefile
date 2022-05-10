@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g -std=gnu99 -Iinclude -I .
 
-# Directories
+SERVER_EXE := server
 DOBJ := obj
 
 LINK = -lconfuse
@@ -11,7 +11,7 @@ LIBPICO = -Llib/ -lpico
 LIBSOCK = -Llib/ -lsocket
 
 # Basic build objectives
-all: objs server
+all: objs $(SERVER_EXE)
 server:	$(LIBS) $(SERVER)
 	$(CC) $(CFLAGS) -o $@ $^ $(LINK) $(LIBPICO) $(LIBSOCK)
 objs:
@@ -77,5 +77,9 @@ clean:
 reset:
 	make clean
 	make all
+
+run:
+	make reset
+	./$(SERVER_EXE)
 	
 	

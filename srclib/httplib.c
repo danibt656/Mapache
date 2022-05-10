@@ -23,7 +23,7 @@ Http_request* httprequest_init()
     return req;
 }
 
-void httprequest_free(Http_request* req)
+__attribute__((always_inline)) inline void httprequest_free(Http_request* req)
 {
     if(req)
         free(req);
@@ -210,7 +210,7 @@ Http_response* httpresponse_init()
     return res;
 }
 
-void httpresponse_free(Http_response* res)
+__attribute__((always_inline)) inline void httpresponse_free(Http_response* res)
 {
     if (res->content)
         free(res->content);
@@ -271,7 +271,6 @@ void http_response_eval_request(Http_request *request, int cli_fd)
 
     /* Get extension from request */
     char *ext = get_filename_extension(path);
-    LOG_INFO("Extension: %s", ext);
     
     /* Send response as ASCII */
     if (STRCMP(request->method, "POST"))
@@ -343,17 +342,7 @@ void http_response_set_headers(Http_response* response, char *path, char *ext, i
     strcpy(response->headers[4], content_type);
 }
 
-void http_response_date(char *buf, size_t buf_len, struct tm *tm)
-{
-    const char *days[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-
-    snprintf(buf, buf_len, "%s, %d %s %d %02d:%02d:%02d GMT",
-        days[tm->tm_wday], tm->tm_mday, months[tm->tm_mon],
-        tm->tm_year + 1900, tm->tm_hour, tm->tm_min, tm->tm_sec);
-}
-
-int http_response_date_now(char *buf, size_t buf_len)
+__attribute__((always_inline)) inline int http_response_date_now(char *buf, size_t buf_len)
 {
     time_t now = time(NULL);
     if (now == -1)
@@ -363,7 +352,12 @@ int http_response_date_now(char *buf, size_t buf_len)
     if (tm == NULL)
         return -1;
 
-    http_response_date(buf, buf_len, tm);
+    const char *days[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    snprintf(buf, buf_len, "%s, %d %s %d %02d:%02d:%02d GMT",
+        days[tm->tm_wday], tm->tm_mday, months[tm->tm_mon],
+        tm->tm_year + 1900, tm->tm_hour, tm->tm_min, tm->tm_sec);
     return 0;
 }
 
@@ -500,7 +494,6 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
         }
 
         if (!STRCMP(req->method, "HEAD")) {
-            printf("HELLO!\n");
             char content_file[CONTENT_SIZE_AUX];
             int ret, file;
             file = open(path, O_RDONLY);

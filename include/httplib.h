@@ -136,7 +136,6 @@ void http_response_eval_request(Http_request *request, int cli_fd);
  * @param buf_len   Buffer length
  * @param tm        Time data structure (<time.h>)
  */
-void http_response_date(char *buf, size_t buf_len, struct tm *tm);
 int http_response_date_now(char *buf, size_t buf_len);
 
 char *read_file(const char *filename);
