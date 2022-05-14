@@ -7,11 +7,16 @@
 #include "liblog.h"
 #include "io.h"
 
+#include <pthread.h>
+
+#define THREAD_POOL_SIZE 10
+
 int init_server(int port, int backlog);
 
 void sigchld_handler(int s);
 
-void launch_service(int connval);
+void* thread_function(void* arg);
+void* handle_request(void *p_client_socket);
 
 void wait_finished_services();
 

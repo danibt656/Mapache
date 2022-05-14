@@ -34,14 +34,14 @@ char* get_directory_as_index(char *dirpath)
 
     char *index_template = "<html>\n"
                     "<head>"
-                           "<title>Index of %s</title>\n"
+                           "<title>Listing %s</title>\n"
                            "<style>\n"
                                 "h2{ font-family: sans-serif; }\n"
                                 "table{ font-family:monospace; border-collapse: separate; border-spacing: 40px 5px;}\n"
                            "</style>\n"
                     "</head>\n"
                     "<body>\n"
-                    "<h2>Index of %s</h2>\n"
+                    "<h2>Listing %s</h2>\n"
                     "<hr>\n"
                     "<table>\n"
                         "<tr>\n"
@@ -57,10 +57,12 @@ char* get_directory_as_index(char *dirpath)
                                     "<td><a href=\"%s%s%s\">%s</a></td>\n"      // path + slash¿ + file
                                     "<td>Date</td>\n"
                                     "<td>%c</td>\n"
-                                    "<td>%d</td>\n"
+                                    "<td>%d kB</td>\n"
                                     "</tr>\n";
 
     char *index_template_end = "</table>\n"
+                               "<hr>\n"
+                               "<p>Mapache Server/v.2.3.0 (%s)</p>\n"
                                "</body>\n"
                                "</html>";
 
@@ -120,11 +122,20 @@ char* get_directory_as_index(char *dirpath)
     closedir(d);
 
     /* Add end of index HTML */
-    size_t needed_end = snprintf(NULL, 0, index_template_end, NULL) + 1;
+#if defined(_WIN32) || defined(_WIN64)
+    const char* os = "Windows";
+#else
+#ifdef __linux
+    const char* os = "Linux";
+#else
+    const char* os = "Unknown OS";
+#endif
+#endif
+    size_t needed_end = snprintf(NULL, 0, index_template_end, os) + 1;
     html_index_end = (char*)malloc(needed_end);
     needed += needed_end;
     html_index = (char*)realloc(html_index, needed);
-    sprintf(html_index_end, index_template_end, NULL);
+    sprintf(html_index_end, index_template_end, os);
     strcat(html_index, html_index_end);
     free(html_index_end);
 

@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
     cfg_t* cfg;
     cfg = cfg_init(opts, 0);
     cfg_parse(cfg, "server_conf.conf");
+    cfg_free(cfg);
     if (!server_signature)
         server_signature = DEFAULT_SIGNATURE;
     if (setenv(SIGNATURE_ENV, server_signature, 1) < 0) {
@@ -147,6 +148,9 @@ int main(int argc, char *argv[])
     if (daemonize_enabled) {
         do_daemon(server_signature);
     }
+    free(server_root);
+    free(server_signature);
+
     while (1)
         accept_connection(server_fd);
 

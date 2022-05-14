@@ -10,7 +10,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#define DIRTYPE 'D'
+#define DIRTYPE 'd'
 #define FILETYPE 'f'
 
 /* Wikimedia Nuvola-like file icons */

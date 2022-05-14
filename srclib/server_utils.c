@@ -1,5 +1,10 @@
 #include "../include/server_utils.h"
+#include "../include/queue.h"
 
+
+pthread_t thread_pool[THREAD_POOL_SIZE];
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t thread_cond_var = PTHREAD_COND_INITIALIZER;
 
 int init_server(int port, int backlog)
 {
@@ -30,6 +35,10 @@ int init_server(int port, int backlog)
         exit(1);
     }
 
+    /* Thread pool */
+    for (int i = 0; i < THREAD_POOL_SIZE; i++)
+        pthread_create(&thread_pool[i], NULL, &thread_function, NULL);
+
     LOG_INFO("Server listening");
     return listenfd;
 }
@@ -46,30 +55,38 @@ void sigchld_handler(int s)
     return;
 }
 
-void launch_service(int cli_fd)
+void* handle_request(void *p_client_socket)
 {
-    int pid;
-    Http_request *request;
+    int cli_fd = *(int*)p_client_socket;
+    free(p_client_socket);
+    LOG_INFO("New service [%lu]", pthread_self());
 
-    pid = fork();
-    if (pid < 0)            // error
-        exit(EXIT_FAILURE);
-    if (pid != 0)           // father
-        return;
-
-    // child process
-    pid = getpid();
-    LOG_INFO("New service [%d]", pid);
-
-    request = httprequest_parse_and_map(cli_fd);
+    Http_request* request = httprequest_parse_and_map(cli_fd);
 
     if (request)
         http_response_eval_request(request, cli_fd);
 
-    close(cli_fd);
-    LOG_INFO("Closing service [%d]", pid);
     httprequest_free(request);
-    exit(EXIT_SUCCESS);
+    close(cli_fd);
+    LOG_INFO("Ending service [%lu]", pthread_self());
+}
+
+void* thread_function(void* arg)
+{
+    while (1) {
+        int* pclient;
+        pthread_mutex_lock(&mutex);
+        /* try to get a connection */
+        if ((pclient = dequeue()) == NULL) {
+            pthread_cond_wait(&thread_cond_var, &mutex);
+            /* try again */
+            pclient = dequeue();
+        }
+        pthread_mutex_unlock(&mutex);
+        if (pclient != NULL) {
+            handle_request(pclient);
+        }
+    }
 }
 
 void wait_finished_services()
@@ -83,6 +100,7 @@ void wait_finished_services()
 void accept_connection(int sockfd)
 {
     struct sockaddr connection;
+    pthread_t thread;
     int cli_fd;
     int len = sizeof(connection);
 
@@ -97,8 +115,13 @@ void accept_connection(int sockfd)
         }
     }
 
-    launch_service(cli_fd);
-    close(cli_fd);
+    int* pclient = malloc(sizeof(int));
+    *pclient = cli_fd;
+    pthread_mutex_lock(&mutex);
+    enqueue(pclient);
+    pthread_cond_signal(&thread_cond_var);
+    pthread_mutex_unlock(&mutex);
+
     wait_finished_services();
 
     return;
