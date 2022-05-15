@@ -57,7 +57,7 @@ char* get_directory_as_index(char *dirpath)
                                     "<td><a href=\"%s%s%s\">%s</a></td>\n"      // path + slash¿ + file
                                     "<td>Date</td>\n"
                                     "<td>%c</td>\n"
-                                    "<td>%d kB</td>\n"
+                                    "<td>%dk</td>\n"
                                     "</tr>\n";
 
     char *index_template_end = "</table>\n"

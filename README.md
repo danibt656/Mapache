@@ -20,13 +20,13 @@
 
 	2.3. [Server configuration](#23-how-to-edit-the-server-config-file)
 
-3. [Frequently Asked Questions](#2-faq)
+3. [FAQ](#3-frequently-asked-questions)
 
 ## 1. What is it?
 
 Mapache is my take on building the most complete HTTP web server that I can, totally from scratch: no NodeJS, no Python, just pure C and memory leaks!
 
-For the time being it is just a side hobby, just a very entertaining one: you see, I've come to realize that I tend to return to C programming every once in a while. It's simple, I know the syntax and there's something to having to do everything by yourself that seems both intimidating and motivating to me. So Mapache fits right in this cookiecutter.
+For the time being it is just a side hobby, just a very entertaining one: you see, I've come to realize that I tend to return to C programming every once in a while. It's simple, I know the syntax, and there's something to having to do everything by yourself that seems both intimidating and motivating to me. So Mapache fits right in this *cookiecutter*.
 
 ### *Here's a snapshot of <u>what it currently does</u>*
 
@@ -141,7 +141,7 @@ There is a server config file, called `server_conf.conf`, which allows you to ed
 Feel free to adjust these values to your needs.
 
 
-## 2. FAQ
+## 3. Frequently Asked Questions
 
 ### *What's with the name 'Mapache'?*
 Remember good old <a href="https://httpd.apache.org/" target="_blank">Apache Server</a>? Well, I think that pretty much answers your question :^)

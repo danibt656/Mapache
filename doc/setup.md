@@ -20,7 +20,7 @@ I made Mapache with simplicity in mind, so designed the set-up process to pretty
 
 The first step will be to get your HTML, CSS and other files that form up your webpage in a dedicated directory. If you have a notion or two about web programming, you'll probably have done this beforehand. Once you know where your files will be, you are ready to jump into step 2.
 
-<center>*I told you this would be simple ;)*</center>
+<center><i>I told you this would be simple ;)</i></center>
 
 ## 2. Adjust the config file
 
@@ -66,4 +66,4 @@ Alternatively, if you want to debug the server, you can specify the log file wit
 
 ***
 
-<center>*Hopefully you followed this steps correctly, and you can view your webpage correctly served!*</center>
+<center><i>Hopefully you followed this steps correctly, and you can view your webpage correctly served!</i></center>
