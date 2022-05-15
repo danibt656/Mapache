@@ -4,22 +4,51 @@
     <img style='max-heigth: 200px;' src='misc/mapache.png'/>
 </div>
 
-<center><i>This project is my take on a simple, but fully functional Web Server</i></center>
+<center><i>HTTP Serving, made simple</i></center>
 
 ***
 
 ## **Contents**
-1. [Installation](#1-how-to-install-how-to-use-the-makefile)
 
-	1.1. [Usage](#11-how-to-use-it)
+1. [Introduction](#1-what-is-it)
 
-	1.2. [Benchmarking](#12-how-to-check-an-example)
+2. [Installation](#2-how-to-install-how-to-use-the-makefile)
 
-	1.3. [Server configuration](#13-how-to-edit-the-server-config-file)
+	2.1. [Usage](#21-how-to-use-it)
 
-2. [Frequently Asked Questions](#2-faq)
+	2.2. [Benchmarking](#22-how-to-check-an-example)
 
-## 1. How to install? How to use the Makefile?
+	2.3. [Server configuration](#23-how-to-edit-the-server-config-file)
+
+3. [Frequently Asked Questions](#2-faq)
+
+## 1. What is it?
+
+Mapache is my take on building the most complete HTTP web server that I can, totally from scratch: no NodeJS, no Python, just pure C and memory leaks!
+
+For the time being it is just a side hobby, just a very entertaining one: you see, I've come to realize that I tend to return to C programming every once in a while. It's simple, I know the syntax and there's something to having to do everything by yourself that seems both intimidating and motivating to me. So Mapache fits right in this cookiecutter.
+
+### *Here's a snapshot of <u>what it currently does</u>*
+
++ Basic functionality of the HTTP protocol.
+
++ Suppor for Python & PHP server-side scripting (via CGI, or *Common Gateway Interface*).
+
++ It generates pretty cool directory listings, like this one:
+
+<div style='text-align: center;' align='center'>
+    <img style='max-heigth: 150px;' src='misc/dirlist.png'/>
+</div>
+
+### *And here is a list of <u>what it could get to do</u>*
+
++ Full (or semi-full) implementation of the HTTP protocol, as defined by [RFC 2616](https://www.ietf.org/rfc/rfc2616.txt).
+
++ Support for service-activation, no running executables required.
+
++ Support for multiple server-side scripting languages.
+
+## 2. How to install? How to use the Makefile?
 
 > Just execute the ALL Makefile rule to generate the executable:
 
@@ -51,7 +80,13 @@ $ make val
 $ sudo apt install libconfuse-dev
 ```
 
-### 1.1. How to use it?
+Also, you'll need to have Python3 and PHP installed in the host environment where the server will run, in order to support server-side scripting:
+
+```
+$ sudo apt install python3 php
+```
+
+### 2.1. How to use it?
 
 Through compiling, a server executable will be generated. You can then run it with:
 
@@ -65,9 +100,23 @@ Nevertheless, there are also a couple of handy flags. You can check them with `-
 
 ```
 $ ./server -h
+ __  __          _ __               _            
+|  \/  |  __ _  | '_ \  __ _   __  | |_    ___   
+| |\/| | / _` | | .__/ / _` | / _| | ' \  / -_)  
+|_|  |_| \__,_| |_|    \__,_| \__| |_||_| \___|  
+
+USAGE: ./server <FLAGS>
+
+Current <FLAGS> are:
+   -h: Shows this help
+   -d: Daemonizes server
+   -f <FILE>: Redirect server logs to <FILE>
+   -C <C_FILE>: Take configuration from <C_FILE> config file (default is `./mapache.conf`)
 ```
 
-### 1.2. How to check an example?
+For detailed set-up documentation, please refer to the [Setting-Up page](doc/setup.md).
+
+### 2.2. How to check an example?
 
 This repo contains a [`web/`](https://github.com/danibt656/Mapache/tree/main/web) folder with both the Mapache start page (for checking if it is running) and a Benchmarking page. To see the main page, just start the server and navigate to this URL in your browser:
 
@@ -77,7 +126,7 @@ The benchmarking page contains several items that display the current capabiliti
 
 `http://localhost:8080/benchmark.html`
 
-### 1.3 How to edit the server config file?
+### 2.3 How to edit the server config file?
 
 There is a server config file, called `server_conf.conf`, which allows you to edit:
 
