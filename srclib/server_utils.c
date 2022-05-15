@@ -17,8 +17,13 @@ int init_server(int port, int backlog)
     memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
     address.sin_port = htons(port);
-    address.sin_addr.s_addr = htonl(INADDR_ANY);
-
+        /* Set IP accordingly to config file */
+    char *server_ip = NULL;
+    server_ip = getenv(IP_ENV);
+    if (STRCMP(server_ip, "localhost"))
+        address.sin_addr.s_addr = htonl(INADDR_ANY);
+    else
+        address.sin_addr.s_addr = inet_addr(server_ip);
     Setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
     
     Bind(listenfd, (struct sockaddr *) &address, sizeof(address));

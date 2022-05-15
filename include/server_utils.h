@@ -7,6 +7,7 @@
 #include "liblog.h"
 #include "io.h"
 
+#include <arpa/inet.h>
 #include <pthread.h>
 
 #define THREAD_POOL_SIZE 10

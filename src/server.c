@@ -7,7 +7,7 @@
 #include <getopt.h>
 #include <signal.h>
 
-#define ARG_FLAGS "dhf:"
+#define ARG_FLAGS "dhf:C:"
 #define SERVER_LOGO "misc/logo.txt"
 
 #define ABS_ROOT_SIZE 256
@@ -29,9 +29,10 @@ __attribute__((always_inline)) inline void print_help()
     "   -h: Shows this help\n"
     "   -d: Daemonizes server\n"
     "   -f <FILE>: Redirect server logs to <FILE>\n"
+    "   -C <C_FILE>: Take configuration from <C_FILE> config file (default is `./%s`)\n",
+        CONFIG_FILE
         );
 }
-
 
 void mapache_handler(int sig)
 {
@@ -46,12 +47,11 @@ void mapache_handler(int sig)
     exit(EXIT_SUCCESS);
 }
 
-
 int main(int argc, char *argv[])
 {
     int opt;
     int daemonize_enabled = 0;
-    char* server_root = NULL, *server_signature = NULL;
+    char* server_root = NULL, *server_signature = NULL, *server_ip = NULL, *cfg_filename = NULL;
     char server_abs_route[ABS_ROOT_SIZE];
     long int max_clients = BACKLOG, listen_port = PORT;
 
@@ -94,6 +94,9 @@ int main(int argc, char *argv[])
                 }
                 set_logger(log_out_file, NOT_USE_COLORS);
                 break;
+            case 'C':
+                cfg_filename = optarg;
+                break;
             case ':':
                 LOG_ERR("Flag needs an associated value\n");
                 exit(EXIT_FAILURE);
@@ -111,12 +114,16 @@ int main(int argc, char *argv[])
         CFG_SIMPLE_STR("server_root", &server_root),
         CFG_SIMPLE_INT("max_clients", &max_clients),
         CFG_SIMPLE_INT("listen_port", &listen_port),
+        CFG_SIMPLE_STR("server_ip", &server_ip),
         CFG_SIMPLE_STR("server_signature", &server_signature),
         CFG_END()
     };
     cfg_t* cfg;
     cfg = cfg_init(opts, 0);
-    cfg_parse(cfg, "server_conf.conf");
+    if (cfg_filename == NULL)
+        cfg_parse(cfg, CONFIG_FILE);
+    else
+        cfg_parse(cfg, cfg_filename);
     cfg_free(cfg);
     if (!server_signature)
         server_signature = DEFAULT_SIGNATURE;
@@ -141,8 +148,18 @@ int main(int argc, char *argv[])
         LOG_ERR("Couldn't set ROOT_ENV as \'%s\'", server_root);
         exit(EXIT_FAILURE);
     }
+        /* Check server IP & set environment variable */
+    struct sockaddr_in sa;
+    if (!server_ip || (inet_pton(AF_INET, server_ip, &(sa.sin_addr))) == 0)
+        server_ip = "localhost";
+    if (setenv(IP_ENV, server_ip, 1) < 0) {
+        perror("setenv");
+        LOG_ERR("Couldn't set IP_ENV as \'%s\'", server_ip);
+        exit(EXIT_FAILURE);
+    }
 
-    fprintf(stdout, "Starting server...%s [Press CTRL+C to stop]\n", server_signature);
+    fprintf(stdout, "Starting server %s at %s port %ld... [Press CTRL+C to stop]\n",
+            server_signature, server_ip, listen_port);
 
     server_fd = init_server(listen_port, max_clients);
     if (daemonize_enabled) {

@@ -80,7 +80,7 @@ char* get_directory_as_index(char *dirpath)
         return NULL;
     }
     size_t needed_row = 0;
-    struct stat statbuf, emptystat;
+    struct stat statbuf;
     char type = FILETYPE;
     char p_aux[1024] = "";
     char* icon_url = NULL;
@@ -110,11 +110,11 @@ char* get_directory_as_index(char *dirpath)
             slash = "/";
 
         /* Add row to HTML table index */
-        needed_row = snprintf(NULL, 0, index_template_row, icon_url, request_path, slash, dir->d_name, dir->d_name, type, dir->d_reclen) + 1;
+        needed_row = snprintf(NULL, 0, index_template_row, icon_url, request_path, slash, dir->d_name, dir->d_name, type, statbuf.st_size) + 1;
         html_index_row = (char*)malloc(needed_row);
         needed += needed_row;
         html_index = (char*)realloc(html_index, needed);
-        sprintf(html_index_row, index_template_row, icon_url, request_path, slash, dir->d_name, dir->d_name, type, dir->d_reclen);
+        sprintf(html_index_row, index_template_row, icon_url, request_path, slash, dir->d_name, dir->d_name, type, statbuf.st_size);
         strcat(html_index, html_index_row);
         free(html_index_row);
         html_index_row = NULL;

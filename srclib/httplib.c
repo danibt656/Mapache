@@ -581,7 +581,7 @@ Http_response *http_response_get_error_response(HTTPErrorCode err_code)
                      "<head><title>%d %s</title></head>\n"
                      "<body>\n"
                      "<center><h1>%d %s</h1></center>\n"
-                     "<hr><center>%s v/2.0</center>\n"
+                     "<hr><center>%s v/2.3.0</center>\n"
                      "</body>\n"
                      "</html>";
     char *html_err_c = calloc(1, strlen(html_err)*2);
