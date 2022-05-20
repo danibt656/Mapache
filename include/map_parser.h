@@ -1,5 +1,5 @@
-#ifndef map_parser_h
-#define map_parser_h
+#ifndef _MAP_PARSER_H
+#define _MAP_PARSER_H
 
 #include <sys/types.h>
 
@@ -58,5 +58,5 @@ int phr_decode_chunked_is_in_data(struct phr_chunked_decoder *decoder);
 }
 #endif
 
-#endif
+#endif // _MAP_PARSER_H
 

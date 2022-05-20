@@ -1,5 +1,5 @@
-#ifndef MIME_H
-#define MIME_H
+#ifndef _MIME_H
+#define _MIME_H
 
 #include "libsocket.h"
 
@@ -27,4 +27,4 @@ int get_content_type(char* ext, char* http_formated_type);
  */
 int is_file_script(char* ext);
 
-#endif
+#endif // _MIME_H

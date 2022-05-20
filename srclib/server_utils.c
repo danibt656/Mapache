@@ -41,8 +41,9 @@ int init_server(int port, int backlog)
     }
 
     /* Thread pool */
-    for (int i = 0; i < THREAD_POOL_SIZE; i++)
+    for (int i = 0; i < THREAD_POOL_SIZE; i++) {
         pthread_create(&thread_pool[i], NULL, &thread_function, NULL);
+    }
 
     LOG_INFO("Server listening");
     return listenfd;

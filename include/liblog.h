@@ -1,5 +1,5 @@
-#ifndef LIBLOG_H
-#define LIBLOG_H
+#ifndef _LIBLOG_H
+#define _LIBLOG_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,4 +47,4 @@ void liblog_timestamp(FILE *fout);
 
 void _log(log_t type, FILE* fout, const char* prefix, const char* suffix, const char* fmt, ...);
 
-#endif
+#endif // _LIBLOG_H

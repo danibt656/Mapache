@@ -1,5 +1,5 @@
-#ifndef DAEMONIZE_H
-#define DAEMONIZE_H
+#ifndef _DAEMONIZE_H
+#define _DAEMONIZE_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,4 +15,4 @@
 */
 void do_daemon(char* signature);
 
-#endif
+#endif // _DAEMONIZE_H

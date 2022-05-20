@@ -42,5 +42,6 @@ void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_co
 
     *size += content_len_int;
 
-    if(content_aux) free(content_aux);
+    if(content_aux)
+        free(content_aux);
 }

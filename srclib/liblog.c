@@ -38,7 +38,7 @@ void _log(log_t type, FILE* fout, const char* prefix, const char* suffix, const 
         liblog_bold_yellow(fout);
     }
     char *signature = NULL;
-    signature = getenv("SIGNATURE_ENV");
+    signature = getenv("__MAP__SIGNATURE_ENV");
     if (signature == NULL)
         signature = "Mapache";
     fprintf(fout, "%s:", signature);

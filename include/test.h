@@ -1,5 +1,5 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef _TEST_H
+#define _TEST_H
 
 #pragma GCC diagnostic ignored "-Wpedantic"
 
@@ -32,4 +32,4 @@ static int __test_counter = 0;
 static int __test_passed = 0;
 static int __pass = 0;
 
-#endif
+#endif // _TEST_H

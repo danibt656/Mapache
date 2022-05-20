@@ -1,5 +1,5 @@
-#ifndef IO_H
-#define IO_H
+#ifndef _IO_H
+#define _IO_H
 
 #include "liblog.h"
 
@@ -11,4 +11,4 @@ char *read_file(const char *filename);
 
 char *read_file_from_FILE(FILE *fp);
 
-#endif
+#endif // _IO_H

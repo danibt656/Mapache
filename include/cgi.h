@@ -1,5 +1,5 @@
-#ifndef CGI_H
-#define CGI_H
+#ifndef _CGI_H
+#define _CGI_H
 
 #include "liblog.h"
 #include "httplib.h"
@@ -34,4 +34,4 @@
 */
 void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size);
 
-#endif
+#endif // _CGI_H

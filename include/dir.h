@@ -1,5 +1,5 @@
-#ifndef DIR_H
-#define DIR_H
+#ifndef _DIR_H
+#define _DIR_H
 
 #include "liblog.h"
 #include "httplib.h"
@@ -71,4 +71,4 @@ char* get_shortened_dirpath(char *dirpath);
  */
 char* get_icon_url_from_ext(char* ext, char type);
 
-#endif
+#endif // _DIR_H

@@ -1,5 +1,5 @@
-#ifndef HTTPREQUEST_H
-#define HTTPREQUEST_H
+#ifndef _HTTPLIB_H
+#define _HTTPLIB_H
 
 #include "map_parser.h"
 #include "libsocket.h"
@@ -223,4 +223,4 @@ void httpresponse_send_options(Http_response *res, int cli_fd);
  */
 void set_index_dir_response(Http_response *response, char* index_dir);
 
-#endif
+#endif // _HTTPLIB_H

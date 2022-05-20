@@ -1,5 +1,5 @@
-#ifndef SERVER_UTILS_H
-#define SERVER_UTILS_H
+#ifndef _SERVER_UTILS_H
+#define _SERVER_UTILS_H
 
 #include "libsocket.h"
 #include "httplib.h"
@@ -23,4 +23,4 @@ void wait_finished_services();
 
 void accept_connection(int sockfd);
 
-#endif
+#endif // _SERVER_UTILS_H

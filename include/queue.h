@@ -1,5 +1,5 @@
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef _QUEUE_H
+#define _QUEUE_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,4 +14,4 @@ void enqueue(int *client_socket);
 
 int* dequeue();
 
-#endif
+#endif // _QUEUE_H

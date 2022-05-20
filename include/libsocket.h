@@ -1,5 +1,5 @@
-#ifndef LIBSOCKET_H
-#define LIBSOCKET_H
+#ifndef _LIBSOCKET_H
+#define _LIBSOCKET_H
 
 #include <unistd.h>
 #include <stdio.h>
@@ -17,10 +17,10 @@
 /* Config file name */
 #define CONFIG_FILE "mapache.conf"
 /* Environment variables for server signature & root */
-#define SIGNATURE_ENV "SIGNATURE_ENV"
-#define ROOT_ENV "ROOT_ENV"
-#define ROOT_SHORT "ROOT_SHORT"
-#define IP_ENV "IP_ENV"
+#define SIGNATURE_ENV "__MAP__SIGNATURE_ENV"
+#define ROOT_ENV "__MAP__ROOT_ENV"
+#define ROOT_SHORT "__MAP__ROOT_SHORT"
+#define IP_ENV "__MAP__IP_ENV"
 /* Listen port */
 #define PORT 8080
 /* Data recv buffer length */
@@ -60,4 +60,4 @@ int sendall(int fd, char *vptr, int *len);
 /* Enviar todo el contenido de un archivo */
 void send_file(const char *filename, int sockfd);
 
-#endif
+#endif // _LIBSOCKET_H

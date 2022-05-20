@@ -1,18 +1,18 @@
 CC = gcc
 CFLAGS = -g -std=gnu99 -pthread -Iinclude -I .
 
-SERVER_EXE := server
+SERVER_EXE := mapacheServer
 DOBJ := obj
 
 LINK = -lconfuse
-SERVER = $(DOBJ)/server.o $(DOBJ)/map_parser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o $(DOBJ)/dir.o $(DOBJ)/cgi.o $(DOBJ)/queue.o
+SERVER = $(DOBJ)/server.o $(DOBJ)/map_parser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o $(DOBJ)/dir.o $(DOBJ)/cgi.o $(DOBJ)/queue.o $(DOBJ)/cfgparser.o
 LIBS = lib/libpico.a lib/libsocket.a
 LIBPICO = -Llib/ -lpico
 LIBSOCK = -Llib/ -lsocket
 
 # Basic build objectives
 all: objs $(SERVER_EXE)
-server:	$(LIBS) $(SERVER)
+$(SERVER_EXE): $(LIBS) $(SERVER)
 	$(CC) $(CFLAGS) -o $@ $^ $(LINK) $(LIBPICO) $(LIBSOCK)
 objs:
 	mkdir obj
@@ -58,6 +58,9 @@ $(DOBJ)/cgi.o: srclib/cgi.c include/cgi.h
 $(DOBJ)/queue.o: srclib/queue.c include/queue.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+$(DOBJ)/cfgparser.o: srclib/cfgparser.c include/cfgparser.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
 # Libraries
 lib/libpico.a: $(DOBJ)/map_parser.o
 	ar -rv $@ $^
@@ -67,11 +70,11 @@ lib/libsocket.a: $(DOBJ)/libsocket.o
 
 # Valgrind
 val:
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./server
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(SERVER_EXE)
 
 # Clean binaries & build directories
 clean:
-	rm -f server
+	rm -f $(SERVER_EXE)
 	rm -f *.o
 	rm -R lib
 	rm -R obj
@@ -84,5 +87,3 @@ reset:
 run:
 	make reset
 	./$(SERVER_EXE)
-	
-	

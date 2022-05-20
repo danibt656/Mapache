@@ -1,7 +1,10 @@
 .vscode/
 .vim/
+env/
+tests/__pycache__/
 
 server
+mapacheServer
 lib/
 obj/
 

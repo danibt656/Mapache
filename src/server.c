@@ -2,6 +2,7 @@
 #include "../include/libsocket.h"
 #include "../include/daemonize.h"
 #include "../include/io.h"
+#include "../include/cfgparser.h"
 
 #include <confuse.h>
 #include <getopt.h>
@@ -13,10 +14,12 @@
 #define ABS_ROOT_SIZE 256
 
 #define DEFAULT_SIGNATURE "Mapache"
+#define DEFAULT_IP "localhost"
+#define DEFAULT_ROOT "/web"
 
 
 int server_fd;
-
+extern pthread_t thread_pool[THREAD_POOL_SIZE];
 
 __attribute__((always_inline)) inline void print_help()
 {   
@@ -42,7 +45,12 @@ void mapache_handler(int sig)
     
     if (server_fd)
         close(server_fd);
-
+    
+    // for (int i = 0; i < THREAD_POOL_SIZE; i++) {
+    //     void* retval;
+    //     pthread_join(thread_pool[i], &retval);
+    // }
+    // pthread_exit(NULL);
     printf("[Ctrl+C] Closing server\n");
     exit(EXIT_SUCCESS);
 }
@@ -51,9 +59,8 @@ int main(int argc, char *argv[])
 {
     int opt;
     int daemonize_enabled = 0;
-    char* server_root = NULL, *server_signature = NULL, *server_ip = NULL, *cfg_filename = NULL;
+    char* cfg_filename = NULL;
     char server_abs_route[ABS_ROOT_SIZE];
-    long int max_clients = BACKLOG, listen_port = PORT;
 
     /* Init logger */
     set_logger(stdout, USE_COLORS);
@@ -109,64 +116,79 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* Get settings from .conf file */
-    cfg_opt_t opts[] = {
-        CFG_SIMPLE_STR("server_root", &server_root),
-        CFG_SIMPLE_INT("max_clients", &max_clients),
-        CFG_SIMPLE_INT("listen_port", &listen_port),
-        CFG_SIMPLE_STR("server_ip", &server_ip),
-        CFG_SIMPLE_STR("server_signature", &server_signature),
-        CFG_END()
-    };
-    cfg_t* cfg;
-    cfg = cfg_init(opts, 0);
+    cfg_parser* cfg;
+    int parseret;
+    cfg = cfg_parser_init();
     if (cfg_filename == NULL)
-        cfg_parse(cfg, CONFIG_FILE);
+        parseret = cfg_parser_parse(cfg, CONFIG_FILE);
     else
-        cfg_parse(cfg, cfg_filename);
-    cfg_free(cfg);
-    if (!server_signature)
-        server_signature = DEFAULT_SIGNATURE;
-    if (setenv(SIGNATURE_ENV, server_signature, 1) < 0) {
+        parseret = cfg_parser_parse(cfg, cfg_filename);
+    printf("%s %s %s %ld %ld\n",
+        cfg->server_root,
+        cfg->server_ip,
+        cfg->server_signature,
+        cfg->listen_port,
+        cfg->max_clients
+    );
+    if (parseret < 0) {
+        LOG_ERR("Could not parse configuration file.");
+        exit(EXIT_FAILURE);
+    }
+
+    if (!cfg->server_signature) {
+        char* default_server_signature = DEFAULT_SIGNATURE;
+        cfg->server_signature = malloc(strlen(default_server_signature)+1);
+        strcpy(cfg->server_signature, default_server_signature);
+    }
+    if (setenv(SIGNATURE_ENV, cfg->server_signature, 1) < 0) {
         perror("setenv");
-        LOG_ERR("Couldn't set SIGNATURE_ENV as \'%s\'", server_signature);
+        LOG_ERR("Couldn't set SIGNATURE_ENV as \'%s\'", cfg->server_signature);
+        cfg_parser_free(cfg);
         exit(EXIT_FAILURE);
     }
     getcwd(server_abs_route, sizeof(server_abs_route));
-    if (!server_root)
-        server_root = "/web";
-        /* Concatenate absolute path to current directory with server root */
-    strcat(server_abs_route, server_root);
-        /* Set server root as environment variable */
+    if (!cfg->server_root) {
+        char* default_server_root = DEFAULT_ROOT;
+        cfg->server_root = malloc(strlen(default_server_root)+1);
+        strcpy(cfg->server_root, default_server_root);
+    }
+    /* Concatenate absolute path to current directory with server root */
+    strcat(server_abs_route, cfg->server_root);
+    /* Set server root as environment variable */
     if (setenv(ROOT_ENV, server_abs_route, 1) < 0) {
         perror("setenv");
         LOG_ERR("Couldn't set ROOT_ENV as \'%s\'", server_abs_route);
+        cfg_parser_free(cfg);
         exit(EXIT_FAILURE);
     }
-    if (setenv(ROOT_SHORT, server_root, 1) < 0) {
+    if (setenv(ROOT_SHORT, cfg->server_root, 1) < 0) {
         perror("setenv");
-        LOG_ERR("Couldn't set ROOT_ENV as \'%s\'", server_root);
+        LOG_ERR("Couldn't set ROOT_ENV as \'%s\'", cfg->server_root);
+        cfg_parser_free(cfg);
         exit(EXIT_FAILURE);
     }
-        /* Check server IP & set environment variable */
+    /* Check server IP & set environment variable */
     struct sockaddr_in sa;
-    if (!server_ip || (inet_pton(AF_INET, server_ip, &(sa.sin_addr))) == 0)
-        server_ip = "localhost";
-    if (setenv(IP_ENV, server_ip, 1) < 0) {
+    if (!cfg->server_ip || (inet_pton(AF_INET, cfg->server_ip, &(sa.sin_addr))) == 0) {
+        if (cfg->server_ip) free(cfg->server_ip);
+        char* default_server_ip = DEFAULT_IP;
+        cfg->server_ip = malloc(strlen(default_server_ip)+1);
+        strcpy(cfg->server_ip, default_server_ip);
+    }
+    if (setenv(IP_ENV, cfg->server_ip, 1) < 0) {
         perror("setenv");
-        LOG_ERR("Couldn't set IP_ENV as \'%s\'", server_ip);
+        LOG_ERR("Couldn't set IP_ENV as \'%s\'", cfg->server_ip);
         exit(EXIT_FAILURE);
     }
 
     fprintf(stdout, "Starting server %s at %s port %ld... [Press CTRL+C to stop]\n",
-            server_signature, server_ip, listen_port);
+            cfg->server_signature, cfg->server_ip, cfg->listen_port);
 
-    server_fd = init_server(listen_port, max_clients);
+    server_fd = init_server(cfg->listen_port, cfg->max_clients);
     if (daemonize_enabled) {
-        do_daemon(server_signature);
+        do_daemon(cfg->server_signature);
     }
-    free(server_root);
-    free(server_signature);
+    cfg_parser_free(cfg);
 
     while (1)
         accept_connection(server_fd);

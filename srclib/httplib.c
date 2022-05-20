@@ -266,6 +266,7 @@ void http_response_eval_request(Http_request *request, int cli_fd)
         char *index_dir = get_directory_as_index(request->path);
         set_index_dir_response(response, index_dir);
         httpresponse_send_response(request, response, cli_fd, request->path, DIR_CODE, args_for_get, args_for_post);
+        free(args_for_get);
         return;
     }
 
@@ -276,10 +277,9 @@ void http_response_eval_request(Http_request *request, int cli_fd)
     if (STRCMP(request->method, "POST"))
         get_args_for_post(request->post_args, args_for_post);
     httpresponse_send_response(request, response, cli_fd, path, ext, args_for_get, args_for_post);
-    LOG_INFO("HTTP Response sent");
-
     free(args_for_get);
-    httpresponse_free(response);
+    //httpresponse_free(response);
+    LOG_INFO("HTTP Response sent");
 }
 
 void http_response_set_headers(Http_response* response, char *path, char *ext, int is_script)
@@ -423,11 +423,13 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
         
         char *args = malloc(strlen(args_get)+strlen(args_post)+1);
         sprintf(args, "%s%s", args_get, args_post);
-
         exec_script(cli_fd, path, args, ext, content, &res_size);
         
         res->content = malloc(strlen(content)+1);
-        if(!res->content) return;
+        if(!res->content) {
+            httpresponse_free(res);
+            return;
+        }
         strcpy(res->content, content);
 
         http_response_set_headers(res, path, ext, SCRIPT_EXECUTED);
@@ -445,6 +447,7 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
         if (sendall(cli_fd, responseASCII, &response_len) == -1) {
             perror("send");
             LOG_ERR("Couldn't send HTTP response");
+            httpresponse_free(res);
             return;
         }
     } else if (STRCMP(ext, DIR_CODE)) {
@@ -473,6 +476,7 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
         if (sendall(cli_fd, responseASCII, &response_len) == -1) {
             perror("send");
             LOG_ERR("Couldn't send HTTP response");
+            httpresponse_free(res);
             return;
         }
     } else {
@@ -490,6 +494,7 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
         if (sendall(cli_fd, responseASCII, &response_len) == -1) {
             perror("send");
             LOG_ERR("Couldn't send HTTP response");
+            httpresponse_free(res);
             return;
         }
 
@@ -503,7 +508,7 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
             close(file);
         }
     }
-    
+    httpresponse_free(res);
     return;
 }
 
@@ -531,7 +536,7 @@ void httpresponse_send_options(Http_response *res, int cli_fd)
 
     char responseASCII[CONTENT_SIZE_AUX];
 
-    sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%sContent-Length: 0\r\nAllow: GET, POST, OPTIONS\r\n\r\n",
+    sprintf(responseASCII, "HTTP/1.%d %d %s\r\n%s%sContent-Length: 0\r\nAllow: GET, POST, OPTIONS, HEAD\r\n\r\n",
                             res->version, res->code, res->message,
                             res->headers[0],                        // Date
                             res->headers[1]                         // Server
