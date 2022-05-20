@@ -4,7 +4,7 @@ CFLAGS = -g -std=gnu99 -pthread -Iinclude -I .
 SERVER_EXE := mapacheServer
 DOBJ := obj
 
-LINK = -lconfuse
+LINK = 
 SERVER = $(DOBJ)/server.o $(DOBJ)/map_parser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o $(DOBJ)/dir.o $(DOBJ)/cgi.o $(DOBJ)/queue.o $(DOBJ)/cfgparser.o
 LIBS = lib/libpico.a lib/libsocket.a
 LIBPICO = -Llib/ -lpico
