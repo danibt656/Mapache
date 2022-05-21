@@ -8,6 +8,8 @@
 
 ***
 
+(If you want, you can jump to the [Setup Page](doc/setup.md))
+
 ## **Contents**
 
 1. [Introduction](#1-what-is-it)
