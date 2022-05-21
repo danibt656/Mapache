@@ -4,7 +4,6 @@
 #include "../include/io.h"
 #include "../include/cfgparser.h"
 
-#include <confuse.h>
 #include <getopt.h>
 #include <signal.h>
 

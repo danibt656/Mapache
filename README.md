@@ -74,13 +74,7 @@ And for Valgrind checking:
 $ make val
 ```
 
-**IMPORTANT DEPENDENCIES**: you need to install the *libconfuse* library for parsing configuration files. You can refer to <a href=https://github.com/libconfuse/libconfuse>its GitHub page </a> for install instructions, but basically you can do well with this command (for Debian-based systems):
-
-```
-$ sudo apt install libconfuse-dev
-```
-
-Also, you'll need to have Python3 and PHP installed in the host environment where the server will run, in order to support server-side scripting:
+**IMPORTANT DEPENDENCIES**: you'll need to have Python3 and PHP installed in the host environment where the server will run, in order to support server-side scripting:
 
 ```
 $ sudo apt install python3 php

@@ -3,6 +3,8 @@ CFLAGS = -g -std=gnu99 -pthread -Iinclude -I .
 
 SERVER_EXE := mapacheServer
 DOBJ := obj
+DSRC := srclib
+DTST := tests
 
 LINK = -lconfuse
 SERVER = $(DOBJ)/server.o $(DOBJ)/map_parser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o $(DOBJ)/dir.o $(DOBJ)/cgi.o $(DOBJ)/queue.o $(DOBJ)/cfgparser.o
@@ -75,7 +77,8 @@ val:
 # Clean binaries & build directories
 clean:
 	rm -f $(SERVER_EXE)
-	rm -f *.o
+	rm -f $(DOBJ)/*.o
+	rm -f $(DTST)/*.so
 	rm -R lib
 	rm -R obj
 	
@@ -87,3 +90,8 @@ reset:
 run:
 	make reset
 	./$(SERVER_EXE)
+
+testso:
+	cc -fPIC -shared -o $(DTST)/mime.so $(DSRC)/mime.c $(DSRC)/liblog.c
+	@for f in $(shell ls ${DTST} | grep .py); do python3 ${DTST}/$${f}; done
+	rm -f $(DTST)/*.so
