@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define KEY_MAX_SIZE 128
 #define VALUE_MAX_SIZE 512
@@ -27,6 +28,8 @@ typedef struct _CFG_PARSER_STRUCT {
 cfg_parser* cfg_parser_init();
 
 void cfg_parser_free(cfg_parser* parser);
+
+int parse_cfg_line(char* line, char* key, char* value);
 
 int cfg_parser_parse(cfg_parser* parser, char* filename);
 

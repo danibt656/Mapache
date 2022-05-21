@@ -22,6 +22,23 @@ void cfg_parser_free(cfg_parser* parser)
     free(parser);
 }
 
+void __rm_wsp(char* s) {
+    char* d = s;
+    do while(isspace(*s)) s++; while(*d++ = *s++);
+}
+
+int parse_cfg_line(char* line, char* key, char* value)
+{
+    char* tok = NULL;
+    tok = strtok(line, "=");
+    __rm_wsp(tok);
+    sprintf(key, "%s", tok);
+    tok = strtok(NULL, "\n");
+    __rm_wsp(tok);
+    sprintf(value, "%s", tok);
+    return 3;
+}
+
 int cfg_parser_parse(cfg_parser* parser, char* filename)
 {
     FILE* fp;
@@ -37,12 +54,7 @@ int cfg_parser_parse(cfg_parser* parser, char* filename)
     while((read = getline(&line, &len, fp)) != -1) {
         /* Skip comments */
         if (line[0] == '#') continue;
-        int tokens_read = sscanf(
-            line,
-            "%s = %s",
-            key,
-            value
-        );
+        int tokens_read = parse_cfg_line(line, key, value);
         if (STRCMP(key, SERVER_IP_KEY)) {
             parser->server_ip = malloc(strlen(value)+1);
             if (parser->server_ip == NULL)

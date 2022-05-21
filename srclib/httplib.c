@@ -396,14 +396,14 @@ void get_args_for_post(char* args_in, char* args_out)
     memset(args_out, 0, sizeof(args_out));
     tok = strtok(args_in, "=");
     tok = strtok(NULL, "&");
-    if(tok)
+    if (tok)
         strcat(args_out, tok);
         strcat(args_out, " ");
 
-    while(tok){
+    while (tok){
         tok = strtok(NULL, "=");
         tok = strtok(NULL, "&");
-        if(tok)
+        if (tok)
             strcat(args_out, tok);
             strcat(args_out, " ");
     }

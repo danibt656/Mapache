@@ -122,13 +122,6 @@ int main(int argc, char *argv[])
         parseret = cfg_parser_parse(cfg, CONFIG_FILE);
     else
         parseret = cfg_parser_parse(cfg, cfg_filename);
-    printf("%s %s %s %ld %ld\n",
-        cfg->server_root,
-        cfg->server_ip,
-        cfg->server_signature,
-        cfg->listen_port,
-        cfg->max_clients
-    );
     if (parseret < 0) {
         LOG_ERR("Could not parse configuration file.");
         exit(EXIT_FAILURE);
