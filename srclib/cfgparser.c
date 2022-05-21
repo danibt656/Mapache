@@ -30,13 +30,22 @@ void __rm_wsp(char* s) {
 int parse_cfg_line(char* line, char* key, char* value)
 {
     char* tok = NULL;
+    int toks_read = 0;
+
+    /* Line format: key = value (whitespace is indiferent) */
+    /* Key */
     tok = strtok(line, "=");
+    if (tok == NULL) return -1;
     __rm_wsp(tok);
     sprintf(key, "%s", tok);
+    toks_read++;
+    /* Value */
     tok = strtok(NULL, "\n");
+    if (tok == NULL) return -1;
     __rm_wsp(tok);
     sprintf(value, "%s", tok);
-    return 3;
+    toks_read++;
+    return toks_read;
 }
 
 int cfg_parser_parse(cfg_parser* parser, char* filename)
@@ -45,6 +54,7 @@ int cfg_parser_parse(cfg_parser* parser, char* filename)
     char* line = NULL;
     size_t len = 0;
     ssize_t read;
+    int linenum = 1;
     char key[KEY_MAX_SIZE] = "", value[VALUE_MAX_SIZE] = "";
 
     fp = fopen(filename, "r");
@@ -54,23 +64,40 @@ int cfg_parser_parse(cfg_parser* parser, char* filename)
     while((read = getline(&line, &len, fp)) != -1) {
         /* Skip comments */
         if (line[0] == '#') continue;
+        /* Parse line */
         int tokens_read = parse_cfg_line(line, key, value);
+        if (tokens_read < 0) {
+            LOG_ERR("Syntax error in config file [line %d]", linenum);
+            fclose(fp);
+            if (line) free(line);
+            return -1;
+        }
+
         if (STRCMP(key, SERVER_IP_KEY)) {
             parser->server_ip = malloc(strlen(value)+1);
-            if (parser->server_ip == NULL)
+            if (parser->server_ip == NULL) {
+                fclose(fp);
+                if (line) free(line);
                 return -1;
+            }
             strcpy(parser->server_ip, value);
         }
         else if (STRCMP(key, SERVER_ROOT_KEY)) {
             parser->server_root = malloc(strlen(value)+1);
-            if (parser->server_root == NULL)
+            if (parser->server_root == NULL) {
+                fclose(fp);
+                if (line) free(line);
                 return -1;
+            }
             strcpy(parser->server_root, value);
         }
         else if (STRCMP(key, SERVER_SIGNATURE_KEY)) {
             parser->server_signature = malloc(strlen(value)+1);
-            if (parser->server_signature == NULL)
+            if (parser->server_signature == NULL) {
+                fclose(fp);
+                if (line) free(line);
                 return -1;
+            }
             strcpy(parser->server_signature, value);
         }
         else if (STRCMP(key, LISTEN_PORT_KEY)) {
@@ -79,10 +106,11 @@ int cfg_parser_parse(cfg_parser* parser, char* filename)
         else if (STRCMP(key, MAX_CLIENTS_KEY)) {
             parser->max_clients = (unsigned long int)atoi(value);
         }
+
+        linenum++;
     }
 
     fclose(fp);
-    if (line)
-        free(line);
+    if (line) free(line);
     return 0;
 }
