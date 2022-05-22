@@ -32,9 +32,7 @@ void wait_finished_services();
 void accept_connection(int sockfd, SSL_CTX* ctx);
 
 /* OpenSSL Configuration */
-
 SSL_CTX* create_context();
-
 void configure_context(SSL_CTX* ctx);
 
 #endif // _SERVER_UTILS_H

@@ -44,22 +44,16 @@ Http_request *httprequest_parse_and_map(void* _cli_fd)
         return NULL;
     }
 
-    int cli_fd;
-    SSL* cli_fd_tls = NULL;
     char* is_tls_enabled = NULL;
     is_tls_enabled = getenv(TLS_EN_ENV);
-    if (is_tls_enabled == NULL)
-        cli_fd = *(int*)_cli_fd;
-    else
-        cli_fd_tls = (SSL*)_cli_fd;
-
+    
     while (1) {
         /* read request */
         if (is_tls_enabled == NULL)
-            while ((rret = read(cli_fd, buff + buflen, sizeof(buff) - buflen)) == -1 && errno == EINTR);
+            while ((rret = read((intptr_t)_cli_fd, buff + buflen, sizeof(buff) - buflen)) == -1 && errno == EINTR);
         else
-            while ((rret = SSL_read(cli_fd_tls, buff + buflen, sizeof(buff) - buflen)) == -1 && errno == EINTR);
-
+            while ((rret = SSL_read((SSL*)_cli_fd, buff + buflen, sizeof(buff) - buflen)) == -1 && errno == EINTR);
+        
         if (rret <= 0)
             return NULL;
         prevbuflen = buflen;

@@ -6,12 +6,12 @@
 
 struct node {
     struct node* next;
-    int *client_socket;
+    void *client_socket;
 };
 typedef struct node node_t;
 
-void enqueue(int *client_socket);
+void enqueue(void* client_socket);
 
-int* dequeue();
+void* dequeue();
 
 #endif // _QUEUE_H

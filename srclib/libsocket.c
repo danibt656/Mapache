@@ -59,16 +59,17 @@ ssize_t Send(void* fd, char* vptr, size_t len)
     char* is_tls_enabled = NULL;
     is_tls_enabled = getenv(TLS_EN_ENV);
     if (is_tls_enabled == NULL)
-        sent = send(*(int*)fd, vptr, len, 0);
+        sent = send((intptr_t)fd, vptr, len, 0);
     else
         sent = (ssize_t)SSL_write((SSL*)fd, vptr, len);
+    
     return sent;
 }
 
 int sendall(void* fd, char *vptr, int *len)
 {
     int total = 0, bytesleft = *len, n;
-
+    
     while (total < *len) {
         n = Send(fd, vptr+total, bytesleft);
         if (n == -1)
@@ -95,7 +96,7 @@ void send_file(const char *filename, void* sockfd)
     if (fp == NULL) {
         LOG_ERR("Couldn't read file %s", filename);
         if (is_tls_enabled == NULL)
-            close(*(int*)sockfd);
+            close((intptr_t)sockfd);
         else {
             SSL_shutdown((SSL*)sockfd);
             SSL_free((SSL*)sockfd);
@@ -109,7 +110,7 @@ void send_file(const char *filename, void* sockfd)
             LOG_ERR("Couldn't send buffer from file");
             fclose(fp);
             if (is_tls_enabled == NULL)
-                close(*(int*)sockfd);
+                close((intptr_t)sockfd);
             else {
                 SSL_shutdown((SSL*)sockfd);
                 SSL_free((SSL*)sockfd);

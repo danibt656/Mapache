@@ -8,15 +8,51 @@ We will walk you through the steps needed to config the HTTPS protocol into your
 
 1. [Get an OpenSSL Key-Cert pair](#1-get-an-openssl-key-cert-pair)
 
+2. [Set up the config file](#2-set-up-the-config-file)
+
+3. [Start Mapache with HTTPS](#3-start-mapache-with-https)
 
 ***
 
 ## 1. Get an OpenSSL Key-Cert pair
 
-The first thing you need to set up HTTPS in Mapache is to get a pair of OpenSSL key and certificate. Obviously, this repo doesn't contain any of these files, for the sake of security. Nevertheless, the Makefile includes a simple rule to generate your local `key.pem` and `cert.pem` files. Just execute the following command:
+The first thing you need to set up HTTPS in Mapache is to get a pair of OpenSSL key and certificate. Obviously, this repo doesn't contain any of these files, for the sake of security. Just execute the following command:
 
 ```
-$ make genssl
+$ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365
 ```
 
-You will be prompted with the OpenSSL console, which will ask you to enter some data in order to generate your personal Key & Certificate. Once you are done, you are ready to modify the server configuration file!
+You will be prompted with the OpenSSL console, which will ask you to enter some data in order to generate your personal Key & Certificate. It is **extremely important** that you remember the 'PASSPHRASE' that you enter here. The rest of the data is optional and leaving it blank will not matter in the generation of the Key-Certificate pair.
+
+Once you are done, you are ready to modify the server configuration file!
+
+# 2. Set up the config file
+
+The next thing that you need to do is include the information for the Key & Certificate in the server's configuration file (for learning more about this file, visit the [Basic Set-up Page](./setup.md)).
+
+These are basically the two properties that need to be filled (I'll use the filenames from the example command I showed in the previous step):
+
+```
+...
+# OpenSSL-HTTPS configuration
+SSL_key = key.pem
+SSL_cert = cert.pem
+...
+```
+
+(This example assumes that the Key & Certificate files are in the same directory as the configuration file.)
+
+Once you are done with this, there's only one thing left to do -start the server!
+
+# 3. Start Mapache with HTTPS
+
+The last thing you'll need to do is start the server with the appropriate flag that tells it to enable secure socket connections via TLS. This way, the HTTP part of the server will now be HTTPS!
+
+For doing so, just add th `-s` flag along with the rest of the flags you may also want to use:
+
+```
+$ ./mapacheServer -s
+```
+
+
+*That's it!* Now Mapache Server will be running in your machine with HTTPS support enabled. From now on, you won't need to worry about your connection data being publicly exposed in the Internet.

@@ -73,16 +73,17 @@ void* handle_request(void* p_client_socket)
 
     if (request != NULL)
         http_response_eval_request(request, p_client_socket);
-
+    
     httprequest_free(request);
     
-    if (is_tls_enabled == NULL)
-        close(*(int*)p_client_socket);
+    if (is_tls_enabled == NULL) {
+        close((intptr_t)p_client_socket);
+        //free(p_client_socket);
+    }
     else {
         SSL_shutdown((SSL*)p_client_socket);
         SSL_free((SSL*)p_client_socket);
     }
-    free(p_client_socket);
 
     LOG_INFO("Ending service [%lu]", pthread_self());
 }
@@ -90,7 +91,7 @@ void* handle_request(void* p_client_socket)
 void* thread_function(void* arg)
 {
     while (1) {
-        int* pclient;
+        void* pclient;
         pthread_mutex_lock(&mutex);
         /* try to get a connection */
         if ((pclient = dequeue()) == NULL) {
@@ -140,11 +141,11 @@ void accept_connection(int sockfd, SSL_CTX* ctx)
         }
     }
 
-    int* pclient = malloc(sizeof(int));
+    void* pclient = malloc(sizeof(void*));
     if (ssl != NULL)
-        *pclient = *(int*)ssl;
+        pclient = (void*)ssl;
     else
-        *pclient = cli_fd;
+        pclient = (void*)(intptr_t)cli_fd;
     pthread_mutex_lock(&mutex);
     enqueue(pclient);
     pthread_cond_signal(&thread_cond_var);
