@@ -1,4 +1,5 @@
 #include "../include/queue.h"
+#include "../include/liblog.h"
 
 node_t* head = NULL;
 node_t* tail = NULL;

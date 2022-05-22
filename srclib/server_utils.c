@@ -67,7 +67,6 @@ void* handle_request(void* p_client_socket)
     is_tls_enabled = getenv(TLS_EN_ENV);
 
     LOG_INFO("New service [%lu]", pthread_self());
-
     Http_request* request = NULL;
     request = httprequest_parse_and_map(p_client_socket);
 
@@ -78,7 +77,6 @@ void* handle_request(void* p_client_socket)
     
     if (is_tls_enabled == NULL) {
         close((intptr_t)p_client_socket);
-        //free(p_client_socket);
     }
     else {
         SSL_shutdown((SSL*)p_client_socket);
@@ -91,7 +89,7 @@ void* handle_request(void* p_client_socket)
 void* thread_function(void* arg)
 {
     while (1) {
-        void* pclient;
+        void* pclient = NULL;
         pthread_mutex_lock(&mutex);
         /* try to get a connection */
         if ((pclient = dequeue()) == NULL) {
@@ -141,7 +139,7 @@ void accept_connection(int sockfd, SSL_CTX* ctx)
         }
     }
 
-    void* pclient = malloc(sizeof(void*));
+    void* pclient = NULL;
     if (ssl != NULL)
         pclient = (void*)ssl;
     else

@@ -23,10 +23,6 @@ SSL_CTX* ctx;
 
 __attribute__((always_inline)) inline void print_help()
 {   
-    char* server_logo = read_file(SERVER_LOGO);
-    if(server_logo) printf("%s\n", server_logo);
-    free(server_logo);
-
     printf("USAGE: ./server <FLAGS>\n\n"
     "Current <FLAGS> are:\n"
     "   -h: Shows this help\n"

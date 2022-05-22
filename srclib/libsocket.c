@@ -62,7 +62,6 @@ ssize_t Send(void* fd, char* vptr, size_t len)
         sent = send((intptr_t)fd, vptr, len, 0);
     else
         sent = (ssize_t)SSL_write((SSL*)fd, vptr, len);
-    
     return sent;
 }
 

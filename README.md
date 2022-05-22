@@ -1,10 +1,10 @@
 # Mapache Server
 
-<div style='text-align: center;' align='center'>
-    <img style='max-heigth: 200px;' src='misc/mapache.png'/>
-</div>
+### *HTTP Serving, made simple*
 
-<center><i>HTTP Serving, made simple</i></center>
+<div style='text-align: center;' align='center'>
+    <img style='max-heigth: 200px;' src='doc/misc/mapache.png'/>
+</div>
 
 ***
 
@@ -28,25 +28,25 @@ Jump to the [HTTPS config Page](doc/https.md)
 
 ## 1. What is it?
 
-Mapache is my take on building the most complete HTTP web server that I can, totally from scratch: no NodeJS, no Python, just pure C and memory leaks!
+Mapache is my take on building the most complete HTTP/HTTPS web server that I can, totally from scratch: no NodeJS, no Python, just pure C and memory leaks!
 
 For the time being it is just a side hobby, just a very entertaining one: you see, I've come to realize that I tend to return to C programming every once in a while. It's simple, I know the syntax, and there's something to having to do everything by yourself that seems both intimidating and motivating to me. So Mapache fits right in this *cookiecutter*.
 
 ### *Here's a snapshot of <u>what it currently does</u>*
 
-+ Basic functionality of the HTTP protocol.
++ Basic functionality of the HTTP/HTTPS protocol.
+
++ Yes, it supports HTTP via OpenSSL & TLS protocol! ([*How to set it up*](doc/https.md))
 
 + Suppor for Python & PHP server-side scripting (via CGI, or *Common Gateway Interface*).
 
 + It generates pretty cool directory listings, like this one:
 
 <div style='text-align: center;' align='center'>
-    <img style='max-heigth: 150px;' src='misc/dirlist.png'/>
+    <img style='max-heigth: 150px;' src='doc/misc/dirlist.png'/>
 </div>
 
 ### *And here is a list of <u>what it could get to do</u>*
-
-+ Ability to use HTTPS instead of HTTP
 
 + Compatibility with Windows & the *WinSock* API
 
@@ -101,17 +101,13 @@ This will init Mapache on localhost IP, and log messages will be shown in the te
 Nevertheless, there are also a couple of handy flags. You can check them with `-h`:
 
 ```
-$ ./server -h
- __  __          _ __               _            
-|  \/  |  __ _  | '_ \  __ _   __  | |_    ___   
-| |\/| | / _` | | .__/ / _` | / _| | ' \  / -_)  
-|_|  |_| \__,_| |_|    \__,_| \__| |_||_| \___|  
-
+$ ./mapacheServer -h
 USAGE: ./server <FLAGS>
 
 Current <FLAGS> are:
    -h: Shows this help
    -d: Daemonizes server
+   -s: Use OpenSSL-TLS to enable secure-HTTP (HTTPS) serving
    -f <FILE>: Redirect server logs to <FILE>
    -C <C_FILE>: Take configuration from <C_FILE> config file (default is `./mapache.conf`)
 ```
@@ -151,4 +147,4 @@ Remember good old <a href="https://httpd.apache.org/" target="_blank">Apache Ser
 ### *Can I contribute to it?*
 Yes! This project is licensed with the MIT License, so as far as I'm concerned, it's totally ok for you to create a pull request. I will validate your code and, if all goes okay, you will become an oficial Racoon Contributor.
 
-<img style='max-heigth: 200px;' src='misc/emoji.png'/><i>Thanks for checking this project out!</i>
+<img style='max-heigth: 200px;' src='doc/misc/emoji.png'/><i>Thanks for checking this project out!</i>
