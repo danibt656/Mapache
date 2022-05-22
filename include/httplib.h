@@ -63,7 +63,7 @@ Http_request* httprequest_init();
 
 void httprequest_free(Http_request* req);
 
-Http_request *httprequest_parse_and_map(int cli_fd);
+Http_request *httprequest_parse_and_map(void* cli_fd);
 
 /**
  * Insert parameters into HTTP Request struct
@@ -127,7 +127,7 @@ typedef enum {
  * @param request   HTTP Request struct
  * @param cli_fd    Client connection socket
  */
-void http_response_eval_request(Http_request *request, int cli_fd);
+void http_response_eval_request(Http_request *request, void* cli_fd);
 
 /**
  * Get dates in HTTP time-date format
@@ -183,7 +183,7 @@ void http_response_set_headers(Http_response* response, char *path, char *ext, i
  * @param args_get  Path args (for GET)
  * @param args_post Body args (for POST)
  */
-void httpresponse_send_response(Http_request *req, Http_response *res, int cli_fd, char* path, char* ext, char* args_get, char* args_post);
+void httpresponse_send_response(Http_request *req, Http_response *res, void* cli_fd, char* path, char* ext, char* args_get, char* args_post);
 
 /**
  * Get HTTP error code and put it into response struct
@@ -206,7 +206,7 @@ Http_response *http_response_get_error_response(HTTPErrorCode err_code);
  * @param res       HTTP Response struct
  * @param cli_fd    Client connection socket
  */
-void httpresponse_send_error(Http_response *res, int cli_fd);
+void httpresponse_send_error(Http_response *res, void* cli_fd);
 
 /**
  * Send response to OPTIONS method
@@ -214,7 +214,7 @@ void httpresponse_send_error(Http_response *res, int cli_fd);
  * @param res       HTTP Response struct
  * @param cli_fd    Client connection socket
  */
-void httpresponse_send_options(Http_response *res, int cli_fd);
+void httpresponse_send_options(Http_response *res, void* cli_fd);
 
 /**
  * @brief Set the index dir response object onto a HTTP response

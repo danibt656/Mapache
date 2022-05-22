@@ -53,12 +53,24 @@ void Listen(int sockfd, int backlog)
 /******************************************************
  *  Sending data
 ******************************************************/
-int sendall(int fd, char *vptr, int *len)
+ssize_t Send(void* fd, char* vptr, size_t len)
+{
+    ssize_t sent = 0;
+    char* is_tls_enabled = NULL;
+    is_tls_enabled = getenv(TLS_EN_ENV);
+    if (is_tls_enabled == NULL)
+        sent = send(*(int*)fd, vptr, len, 0);
+    else
+        sent = (ssize_t)SSL_write((SSL*)fd, vptr, len);
+    return sent;
+}
+
+int sendall(void* fd, char *vptr, int *len)
 {
     int total = 0, bytesleft = *len, n;
 
     while (total < *len) {
-        n = send(fd, vptr+total, bytesleft, 0);
+        n = Send(fd, vptr+total, bytesleft);
         if (n == -1)
             break;
         total += n;
@@ -70,24 +82,38 @@ int sendall(int fd, char *vptr, int *len)
     return n == -1 ? -1 : 0;
 }
 
-void send_file(const char *filename, int sockfd)
+void send_file(const char *filename, void* sockfd)
 {
     int n;
     char data[BUFFLEN] = {0};
     FILE *fp = fopen(filename, "r");
 
+    ssize_t sent = 0;
+    char* is_tls_enabled = NULL;
+    is_tls_enabled = getenv(TLS_EN_ENV);
+
     if (fp == NULL) {
         LOG_ERR("Couldn't read file %s", filename);
-        close(sockfd);
+        if (is_tls_enabled == NULL)
+            close(*(int*)sockfd);
+        else {
+            SSL_shutdown((SSL*)sockfd);
+            SSL_free((SSL*)sockfd);
+        }
         exit(EXIT_FAILURE);
     }
 
     while(fread(data, 1, BUFFLEN+1, fp) != 0) {
-        if (send(sockfd, data, sizeof(data), 0) == -1) {
-            perror("send");
+        if (Send(sockfd, data, sizeof(data)) == -1) {
+            perror("Send");
             LOG_ERR("Couldn't send buffer from file");
             fclose(fp);
-            close(sockfd);
+            if (is_tls_enabled == NULL)
+                close(*(int*)sockfd);
+            else {
+                SSL_shutdown((SSL*)sockfd);
+                SSL_free((SSL*)sockfd);
+            }
             exit(EXIT_FAILURE);
         }
         memset(&data, 0, BUFFLEN);

@@ -8,7 +8,9 @@
 
 ***
 
-(If you want, you can jump to the [Setup Page](doc/setup.md))
+Jump to the [Setup Page](doc/setup.md)
+
+Jump to the [HTTPS config Page](doc/https.md)
 
 ## **Contents**
 
@@ -43,6 +45,10 @@ For the time being it is just a side hobby, just a very entertaining one: you se
 </div>
 
 ### *And here is a list of <u>what it could get to do</u>*
+
++ Ability to use HTTPS instead of HTTP
+
++ Compatibility with Windows & the *WinSock* API
 
 + Full (or semi-full) implementation of the HTTP protocol, as defined by [RFC 2616](https://www.ietf.org/rfc/rfc2616.txt).
 

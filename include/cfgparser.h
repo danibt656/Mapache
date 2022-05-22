@@ -16,6 +16,8 @@
 #define SERVER_IP_KEY "server_ip"
 #define LISTEN_PORT_KEY "listen_port"
 #define MAX_CLIENTS_KEY "max_clients"
+#define KEY_PEM_FILE "SSL_key"
+#define CERT_PEM_FILE "SSL_cert"
 
 typedef struct _CFG_PARSER_STRUCT {
     char* server_root;
@@ -23,11 +25,16 @@ typedef struct _CFG_PARSER_STRUCT {
     char* server_ip;
     unsigned long int listen_port;
     unsigned long int max_clients;
+    /* For HTTPS*/
+    char* key_pem_file;
+    char* cert_pem_file;
 } cfg_parser;
 
 cfg_parser* cfg_parser_init();
 
 void cfg_parser_free(cfg_parser* parser);
+
+static void __rm_wsp(char* s);
 
 int parse_cfg_line(char* line, char* key, char* value);
 

@@ -16,3 +16,5 @@ tests/*.so
 *.cxxflags
 *.files
 *.includes
+
+*.pem

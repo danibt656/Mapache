@@ -12,7 +12,7 @@ There are basically three steps you need to follow in order to serve your webpag
 
 3. [Init the server daemon](#3-init-the-server-daemon)
 
-I made Mapache with simplicity in mind, so designed the set-up process to pretty straight forward. You'll hopefully be ready to go with as few tweaks as possible!
+Mapache was designed with simplicity in mind, so designed the set-up process to pretty straight forward. You'll hopefully be ready to go with as few tweaks as possible!
 
 ***
 

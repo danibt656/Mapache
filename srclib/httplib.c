@@ -29,7 +29,7 @@ __attribute__((always_inline)) inline void httprequest_free(Http_request* req)
         free(req);
 }
 
-Http_request *httprequest_parse_and_map(int cli_fd)
+Http_request *httprequest_parse_and_map(void* _cli_fd)
 {
     char buff[4096];
     const char *method, *path;
@@ -44,9 +44,21 @@ Http_request *httprequest_parse_and_map(int cli_fd)
         return NULL;
     }
 
+    int cli_fd;
+    SSL* cli_fd_tls = NULL;
+    char* is_tls_enabled = NULL;
+    is_tls_enabled = getenv(TLS_EN_ENV);
+    if (is_tls_enabled == NULL)
+        cli_fd = *(int*)_cli_fd;
+    else
+        cli_fd_tls = (SSL*)_cli_fd;
+
     while (1) {
         /* read request */
-        while ((rret = read(cli_fd, buff + buflen, sizeof(buff) - buflen)) == -1 && errno == EINTR);
+        if (is_tls_enabled == NULL)
+            while ((rret = read(cli_fd, buff + buflen, sizeof(buff) - buflen)) == -1 && errno == EINTR);
+        else
+            while ((rret = SSL_read(cli_fd_tls, buff + buflen, sizeof(buff) - buflen)) == -1 && errno == EINTR);
 
         if (rret <= 0)
             return NULL;
@@ -81,7 +93,7 @@ Http_request *httprequest_parse_and_map(int cli_fd)
                             pret, num_headers, headers)) != HTTP_VALID)
     {
         Http_response *error = http_response_get_error_response(validate_status);
-        httpresponse_send_error(error, cli_fd);
+        httpresponse_send_error(error, _cli_fd);
         httpresponse_free(error);
         return NULL;
     }
@@ -217,7 +229,7 @@ __attribute__((always_inline)) inline void httpresponse_free(Http_response* res)
     free(res);
 }
 
-void http_response_eval_request(Http_request *request, int cli_fd)
+void http_response_eval_request(Http_request *request, void* cli_fd)
 {
     char args_for_post[AUX_SIZE]="";
 
@@ -409,7 +421,7 @@ void get_args_for_post(char* args_in, char* args_out)
     }
 }
 
-void httpresponse_send_response(Http_request *req, Http_response *res, int cli_fd, char* path, char* ext, char* args_get, char* args_post)
+void httpresponse_send_response(Http_request *req, Http_response *res, void* cli_fd, char* path, char* ext, char* args_get, char* args_post)
 {   
     if(!res || !req) return;
 
@@ -512,7 +524,7 @@ void httpresponse_send_response(Http_request *req, Http_response *res, int cli_f
     return;
 }
 
-void httpresponse_send_error(Http_response *res, int cli_fd)
+void httpresponse_send_error(Http_response *res, void* cli_fd)
 {   
     if(!res) return;
 
@@ -527,10 +539,10 @@ void httpresponse_send_error(Http_response *res, int cli_fd)
                             res->headers[4],                        // Content-Type
                             res->content
                             );
-    send(cli_fd, responseASCII, strlen(responseASCII), 0);
+    Send(cli_fd, responseASCII, strlen(responseASCII));
 }
 
-void httpresponse_send_options(Http_response *res, int cli_fd)
+void httpresponse_send_options(Http_response *res, void* cli_fd)
 {   
     if(!res) return;
 
@@ -541,7 +553,7 @@ void httpresponse_send_options(Http_response *res, int cli_fd)
                             res->headers[0],                        // Date
                             res->headers[1]                         // Server
                             );
-    send(cli_fd, responseASCII, strlen(responseASCII), 0);
+    Send(cli_fd, responseASCII, strlen(responseASCII));
 }
 
 void http_response_set_error(HTTPErrorCode err_code, Http_response *response)

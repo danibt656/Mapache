@@ -10,6 +10,8 @@ cfg_parser* cfg_parser_init()
     parser->server_signature = NULL;
     parser->listen_port = -1;
     parser->max_clients = -1;
+    parser->key_pem_file = NULL;
+    parser->cert_pem_file = NULL;
 
     return parser;
 }
@@ -19,10 +21,12 @@ void cfg_parser_free(cfg_parser* parser)
     if (parser->server_ip) free(parser->server_ip);
     if (parser->server_root) free(parser->server_root);
     if (parser->server_signature) free(parser->server_signature);
+    if (parser->key_pem_file) free(parser->key_pem_file);
+    if (parser->cert_pem_file) free(parser->cert_pem_file);
     free(parser);
 }
 
-void __rm_wsp(char* s) {
+static void __rm_wsp(char* s) {
     char* d = s;
     do while(isspace(*s)) s++; while(*d++ = *s++);
 }
@@ -105,6 +109,24 @@ int cfg_parser_parse(cfg_parser* parser, char* filename)
         }
         else if (STRCMP(key, MAX_CLIENTS_KEY)) {
             parser->max_clients = (unsigned long int)atoi(value);
+        }
+        else if (STRCMP(key, KEY_PEM_FILE)) {
+            parser->key_pem_file = malloc(strlen(value)+1);
+            if (parser->key_pem_file == NULL) {
+                fclose(fp);
+                if (line) free(line);
+                return -1;
+            }
+            strcpy(parser->key_pem_file, value);
+        }
+        else if (STRCMP(key, CERT_PEM_FILE)) {
+            parser->cert_pem_file = malloc(strlen(value)+1);
+            if (parser->cert_pem_file == NULL) {
+                fclose(fp);
+                if (line) free(line);
+                return -1;
+            }
+            strcpy(parser->cert_pem_file, value);
         }
 
         linenum++;

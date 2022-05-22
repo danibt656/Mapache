@@ -61,19 +61,29 @@ void sigchld_handler(int s)
     return;
 }
 
-void* handle_request(void *p_client_socket)
+void* handle_request(void* p_client_socket)
 {
-    int cli_fd = *(int*)p_client_socket;
-    free(p_client_socket);
+    char* is_tls_enabled = NULL;
+    is_tls_enabled = getenv(TLS_EN_ENV);
+
     LOG_INFO("New service [%lu]", pthread_self());
 
-    Http_request* request = httprequest_parse_and_map(cli_fd);
+    Http_request* request = NULL;
+    request = httprequest_parse_and_map(p_client_socket);
 
-    if (request)
-        http_response_eval_request(request, cli_fd);
+    if (request != NULL)
+        http_response_eval_request(request, p_client_socket);
 
     httprequest_free(request);
-    close(cli_fd);
+    
+    if (is_tls_enabled == NULL)
+        close(*(int*)p_client_socket);
+    else {
+        SSL_shutdown((SSL*)p_client_socket);
+        SSL_free((SSL*)p_client_socket);
+    }
+    free(p_client_socket);
+
     LOG_INFO("Ending service [%lu]", pthread_self());
 }
 
@@ -103,11 +113,12 @@ void wait_finished_services()
     while ((wpid = wait(&status)) > 0);
 }
 
-void accept_connection(int sockfd)
+void accept_connection(int sockfd, SSL_CTX* ctx)
 {
     struct sockaddr connection;
     pthread_t thread;
     int cli_fd;
+    SSL* ssl = NULL;
     int len = sizeof(connection);
 
     if ( (cli_fd = accept(sockfd, (struct sockaddr*) &connection, &len)) < 0) {
@@ -120,9 +131,20 @@ void accept_connection(int sockfd)
             exit(EXIT_FAILURE);
         }
     }
+    
+    if (ctx != NULL) {
+        ssl = SSL_new(ctx);
+        SSL_set_fd(ssl, cli_fd);
+        if (SSL_accept(ssl) <= 0) {
+            ERR_print_errors_fp(stderr);
+        }
+    }
 
     int* pclient = malloc(sizeof(int));
-    *pclient = cli_fd;
+    if (ssl != NULL)
+        *pclient = *(int*)ssl;
+    else
+        *pclient = cli_fd;
     pthread_mutex_lock(&mutex);
     enqueue(pclient);
     pthread_cond_signal(&thread_cond_var);
@@ -131,4 +153,46 @@ void accept_connection(int sockfd)
     wait_finished_services();
 
     return;
+}
+
+SSL_CTX *create_context()
+{
+    const SSL_METHOD *method;
+    SSL_CTX *ctx;
+
+    method = TLS_server_method();
+
+    ctx = SSL_CTX_new(method);
+    if (!ctx) {
+        LOG_ERR("Unable to create SSL context");
+        perror("SSL_CTX_new");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    return ctx;
+}
+
+void configure_context(SSL_CTX *ctx)
+{
+    if (!ctx) return;
+
+    /* Get Key/Cert filenames */
+    char* key_pem_file = getenv(KEY_PEM_ENV);
+    if (key_pem_file == NULL)
+        return;
+    char* cert_pem_file = getenv(CERT_PEM_ENV);
+    if (cert_pem_file == NULL)
+        return;
+
+    /* Set the key and cert */
+    if (SSL_CTX_use_certificate_file(ctx, cert_pem_file, SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    if (SSL_CTX_use_PrivateKey_file(ctx, key_pem_file, SSL_FILETYPE_PEM) <= 0 ) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
 }

@@ -9,6 +9,8 @@
 
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #define THREAD_POOL_SIZE 10
 
@@ -21,6 +23,18 @@ void* handle_request(void *p_client_socket);
 
 void wait_finished_services();
 
-void accept_connection(int sockfd);
+/**
+ * Accept entering connection
+ * 
+ * @param sockfd    Server's listening socket
+ * @param ctx       SSL context, or NULL if no SSL is enabled
+*/
+void accept_connection(int sockfd, SSL_CTX* ctx);
+
+/* OpenSSL Configuration */
+
+SSL_CTX* create_context();
+
+void configure_context(SSL_CTX* ctx);
 
 #endif // _SERVER_UTILS_H

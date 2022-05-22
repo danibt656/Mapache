@@ -11,6 +11,8 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include "../include/liblog.h"
 
@@ -21,6 +23,9 @@
 #define ROOT_ENV "__MAP__ROOT_ENV"
 #define ROOT_SHORT "__MAP__ROOT_SHORT"
 #define IP_ENV "__MAP__IP_ENV"
+#define TLS_EN_ENV "__MAP__TLS_EN_ENV"
+#define KEY_PEM_ENV "__MAP__KEY_PEM_ENV"
+#define CERT_PEM_ENV "__MAP__CERT_PEM_ENV"
 /* Listen port */
 #define PORT 8080
 /* Data recv buffer length */
@@ -55,9 +60,11 @@ void Listen(int sockfd, int backlog);
  *
  *  Original idea: Unix Network Programming, Vol. 1 (W.R. Stevens)
 */
-/* Enviar todo el contenido de buff con send() */
-int sendall(int fd, char *vptr, int *len);
-/* Enviar todo el contenido de un archivo */
-void send_file(const char *filename, int sockfd);
+/* Wrap the Wether-To-Use-TLS yes/no logic here */
+ssize_t Send(void* fd, char *vptr, size_t len);
+
+int sendall(void* fd, char *vptr, int *len);
+
+void send_file(const char *filename, void* sockfd);
 
 #endif // _LIBSOCKET_H

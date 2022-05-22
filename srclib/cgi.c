@@ -1,7 +1,7 @@
 #include "../include/cgi.h"
 
 
-void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size)
+void exec_script(void* cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size)
 {
     if (!cli_fd || !path || !args || !ext) {
         LOG_ERR("Error executing script");

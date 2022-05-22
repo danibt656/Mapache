@@ -6,7 +6,7 @@ DOBJ := obj
 DSRC := srclib
 DTST := tests
 
-LINK = 
+LINK = -lssl -lcrypto
 SERVER = $(DOBJ)/server.o $(DOBJ)/map_parser.o $(DOBJ)/liblog.o $(DOBJ)/daemonize.o $(DOBJ)/server_utils.o $(DOBJ)/httplib.o $(DOBJ)/mime.o $(DOBJ)/io.o $(DOBJ)/dir.o $(DOBJ)/cgi.o $(DOBJ)/queue.o $(DOBJ)/cfgparser.o
 LIBS = lib/libpico.a lib/libsocket.a
 LIBPICO = -Llib/ -lpico
@@ -15,7 +15,7 @@ LIBSOCK = -Llib/ -lsocket
 # Basic build objectives
 all: objs $(SERVER_EXE)
 $(SERVER_EXE): $(LIBS) $(SERVER)
-	$(CC) $(CFLAGS) -o $@ $^ $(LINK) $(LIBPICO) $(LIBSOCK)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBPICO) $(LIBSOCK) $(LINK) 
 objs:
 	mkdir obj
 	mkdir lib
@@ -31,10 +31,10 @@ $(DOBJ)/httplib.o: srclib/httplib.c include/liblog.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(DOBJ)/daemonize.o: srclib/daemonize.c include/daemonize.h include/liblog.h
-	$(CC) $(CFLAGS) -c -o $@ $< $(LINK)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(DOBJ)/libsocket.o: srclib/libsocket.c include/libsocket.h include/liblog.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< $(LINK)
 
 $(DOBJ)/map_parser.o: srclib/map_parser.c include/map_parser.h
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -43,7 +43,7 @@ $(DOBJ)/liblog.o: srclib/liblog.c include/liblog.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(DOBJ)/server_utils.o: srclib/server_utils.c include/server_utils.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< $(LINK)
 
 $(DOBJ)/mime.o: srclib/mime.c include/mime.h
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -95,3 +95,6 @@ testso:
 	cc -fPIC -shared -o $(DTST)/mime.so $(DSRC)/mime.c $(DSRC)/liblog.c
 	@for f in $(shell ls ${DTST} | grep .py); do python3 ${DTST}/$${f}; done
 	rm -f $(DTST)/*.so
+
+genssl:
+	openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365

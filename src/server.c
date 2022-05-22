@@ -7,7 +7,7 @@
 #include <getopt.h>
 #include <signal.h>
 
-#define ARG_FLAGS "dhf:C:"
+#define ARG_FLAGS "dhf:C:s"
 #define SERVER_LOGO "misc/logo.txt"
 
 #define ABS_ROOT_SIZE 256
@@ -19,6 +19,7 @@
 
 int server_fd;
 extern pthread_t thread_pool[THREAD_POOL_SIZE];
+SSL_CTX* ctx;
 
 __attribute__((always_inline)) inline void print_help()
 {   
@@ -30,6 +31,7 @@ __attribute__((always_inline)) inline void print_help()
     "Current <FLAGS> are:\n"
     "   -h: Shows this help\n"
     "   -d: Daemonizes server\n"
+    "   -s: Use OpenSSL-TLS to enable secure-HTTP (HTTPS) serving\n"
     "   -f <FILE>: Redirect server logs to <FILE>\n"
     "   -C <C_FILE>: Take configuration from <C_FILE> config file (default is `./%s`)\n",
         CONFIG_FILE
@@ -45,6 +47,9 @@ void mapache_handler(int sig)
     if (server_fd)
         close(server_fd);
     
+    if (ctx)
+        SSL_CTX_free(ctx);
+
     // for (int i = 0; i < THREAD_POOL_SIZE; i++) {
     //     void* retval;
     //     pthread_join(thread_pool[i], &retval);
@@ -57,6 +62,7 @@ void mapache_handler(int sig)
 int main(int argc, char *argv[])
 {
     int opt;
+    int use_tls = 0;
     int daemonize_enabled = 0;
     char* cfg_filename = NULL;
     char server_abs_route[ABS_ROOT_SIZE];
@@ -87,7 +93,7 @@ int main(int argc, char *argv[])
         switch (opt) {
             case 'd':
                 daemonize_enabled = 1;
-                LOG_INFO("Daemonizing is enabled");
+                LOG_INFO("[Config] Daemonizing is enabled");
                 break;
             case 'h':
                 print_help();
@@ -95,7 +101,7 @@ int main(int argc, char *argv[])
             case 'f':
                 log_out_file = fopen(optarg, "w");
                 if(!log_out_file){
-                    printf("Couldn't open specified file\n");
+                    printf("[Config] Couldn't open specified file\n");
                     exit(EXIT_FAILURE);
                 }
                 set_logger(log_out_file, NOT_USE_COLORS);
@@ -103,12 +109,21 @@ int main(int argc, char *argv[])
             case 'C':
                 cfg_filename = optarg;
                 break;
+            case 's':
+                use_tls = 1;
+                if (setenv(TLS_EN_ENV, "1", 1) < 0) {
+                    perror("setenv");
+                    LOG_ERR("Couldn't set TLS_EN_ENV as \'%c\'", '1');
+                    exit(EXIT_FAILURE);
+                }
+                LOG_INFO("[Config] Secure-HTTP is enabled");
+                break;
             case ':':
-                LOG_ERR("Flag needs an associated value\n");
+                LOG_ERR("[Config] Flag needs an associated value\n");
                 exit(EXIT_FAILURE);
                 break;
             case '?':
-                LOG_ERR("Unknown flag: %c\n", optopt);
+                LOG_ERR("[Config] Unknown flag: %c\n", optopt);
                 print_help();
                 exit(EXIT_FAILURE);
                 break;
@@ -172,6 +187,24 @@ int main(int argc, char *argv[])
         LOG_ERR("Couldn't set IP_ENV as \'%s\'", cfg->server_ip);
         exit(EXIT_FAILURE);
     }
+    /* Env.Vars for OpenSSL Key/Certificate filenames */
+    if ((!cfg->key_pem_file || !cfg->cert_pem_file) && use_tls != 0) {
+        LOG_ERR("No OpenSSL key-certficate pair was given!", cfg->server_signature);
+        cfg_parser_free(cfg);
+        exit(EXIT_FAILURE);
+    }
+    if (setenv(KEY_PEM_ENV, cfg->key_pem_file, 1) < 0) {
+        perror("setenv");
+        LOG_ERR("Couldn't set KEY_PEM_ENV as \'%s\'", cfg->key_pem_file);
+        cfg_parser_free(cfg);
+        exit(EXIT_FAILURE);
+    }
+    if (setenv(CERT_PEM_ENV, cfg->cert_pem_file, 1) < 0) {
+        perror("setenv");
+        LOG_ERR("Couldn't set CERT_PEM_ENV as \'%s\'", cfg->cert_pem_file);
+        cfg_parser_free(cfg);
+        exit(EXIT_FAILURE);
+    }
 
     fprintf(stdout, "Starting server %s at %s port %ld... [Press CTRL+C to stop]\n",
             cfg->server_signature, cfg->server_ip, cfg->listen_port);
@@ -182,12 +215,21 @@ int main(int argc, char *argv[])
     }
     cfg_parser_free(cfg);
 
+    /* TLS setp */
+    if (use_tls != 0) {
+        ctx = create_context();
+        configure_context(ctx);
+    } else
+        ctx = NULL;
+
     while (1)
-        accept_connection(server_fd);
+        accept_connection(server_fd, ctx);
 
     if(log_out_file != stdout && log_out_file != stderr)
         fclose(log_out_file);
     if (server_fd)
         close(server_fd);
+    if (ctx)
+        SSL_CTX_free(ctx);
     return 0;
 }

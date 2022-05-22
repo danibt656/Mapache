@@ -32,6 +32,6 @@
  * @param to_fill_content   Script execution script
  * @param size              Result size in bytes
 */
-void exec_script(int cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size);
+void exec_script(void* cli_fd, char* path, char* args, char* ext, char* to_fill_content, long* size);
 
 #endif // _CGI_H
