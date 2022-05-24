@@ -1,6 +1,7 @@
 #ifndef _SERVER_UTILS_H
 #define _SERVER_UTILS_H
 
+#include "utils.h"
 #include "libsocket.h"
 #include "httplib.h"
 #include "map_parser.h"

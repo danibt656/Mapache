@@ -25,9 +25,6 @@ int log_use_colors;
 #define LOG_INFO(...) _log(LOG_T_INFO, log_out_file, "-> ", "\n", __VA_ARGS__)
 #define LOG_ERR(...) _log(LOG_T_ERR, log_out_file, "!> ", "\n", __VA_ARGS__)
 
-/* Shortened strcmp() boolean assert */
-#define STRCMP(str1, str2) (strcmp(str1, str2) == 0)
-
 /**
  * Color functions
  *

@@ -1,6 +1,7 @@
 #ifndef _DIR_H
 #define _DIR_H
 
+#include "utils.h"
 #include "liblog.h"
 #include "httplib.h"
 

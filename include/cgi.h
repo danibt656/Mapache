@@ -1,6 +1,7 @@
 #ifndef _CGI_H
 #define _CGI_H
 
+#include "utils.h"
 #include "liblog.h"
 #include "httplib.h"
 

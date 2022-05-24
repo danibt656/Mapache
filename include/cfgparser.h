@@ -1,6 +1,7 @@
 #ifndef _CFGPARSER_H
 #define _CFGPARSER_H
 
+#include "utils.h"
 #include "liblog.h"
 
 #include <stdio.h>

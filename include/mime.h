@@ -1,6 +1,7 @@
 #ifndef _MIME_H
 #define _MIME_H
 
+#include "utils.h"
 #include "libsocket.h"
 
 char *get_filename_extension(char *filename);

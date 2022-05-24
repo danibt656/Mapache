@@ -1,6 +1,7 @@
 #ifndef _HTTPLIB_H
 #define _HTTPLIB_H
 
+#include "utils.h"
 #include "map_parser.h"
 #include "libsocket.h"
 #include "liblog.h"

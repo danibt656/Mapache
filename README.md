@@ -36,7 +36,7 @@ For the time being it is just a side hobby, just a very entertaining one: you se
 
 + Basic functionality of the HTTP/HTTPS protocol.
 
-+ Yes, it supports HTTP via OpenSSL & TLS protocol! ([*How to set it up*](doc/https.md))
++ Yes, it supports HTTPS via OpenSSL & TLS protocol! ([*How to set it up?*](doc/https.md))
 
 + Suppor for Python & PHP server-side scripting (via CGI, or *Common Gateway Interface*).
 
@@ -46,7 +46,7 @@ For the time being it is just a side hobby, just a very entertaining one: you se
     <img style='max-heigth: 150px;' src='doc/misc/dirlist.png'/>
 </div>
 
-### *And here is a list of <u>what it could get to do</u>*
+### *And here's a list of <u>what it could get to do</u>*
 
 + Compatibility with Windows & the *WinSock* API
 
@@ -93,7 +93,7 @@ $ sudo apt install python3 php
 Through compiling, a server executable will be generated. You can then run it with:
 
 ```
-$ ./server
+$ ./mapacheServer
 ```
 
 This will init Mapache on localhost IP, and log messages will be shown in the terminal.
