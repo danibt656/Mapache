@@ -8,6 +8,8 @@
 
 ***
 
+Visit the [official homepage](https://danibt656.github.io/website/mapache/)
+
 Jump to the [Setup Page](doc/setup.md)
 
 Jump to the [HTTPS config Page](doc/https.md)
@@ -38,7 +40,7 @@ For the time being it is just a side hobby, just a very entertaining one: you se
 
 + Yes, it supports HTTPS via OpenSSL & TLS protocol! ([*How to set it up?*](doc/https.md))
 
-+ Suppor for Python & PHP server-side scripting (via CGI, or *Common Gateway Interface*).
++ Support for Python & PHP server-side scripting (via CGI, or *Common Gateway Interface*).
 
 + It generates pretty cool directory listings, like this one:
 
