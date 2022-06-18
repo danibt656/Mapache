@@ -1,6 +1,6 @@
 # Mapache Server
 
-### *HTTP Serving, made simple*
+### *HTTP(S) Serving, made simple*
 
 <div style='text-align: center;' align='center'>
     <img style='max-heigth: 200px;' src='doc/misc/mapache.png'/>
