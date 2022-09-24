@@ -9,6 +9,7 @@
 <div style='text-align: center;' align='center'>
     <img style='max-heigth: 100px;' src='doc/misc/mapache.png'/>
 </div>
+
 ***
 
 Visit the [official homepage](https://danibt656.github.io/website/mapache/)
