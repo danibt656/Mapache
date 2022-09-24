@@ -2,10 +2,13 @@
 
 ### *HTTP(S) Serving, made simple*
 
-<div style='text-align: center;' align='center'>
-    <img style='max-heigth: 200px;' src='doc/misc/mapache.png'/>
-</div>
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/danibt656/Mapache?style=flat-square)
+![GitHub](https://img.shields.io/github/license/danibt656/Mapache?style=flat-square)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/y/danibt656/Mapache?style=flat-square)
 
+<div style='text-align: center;' align='center'>
+    <img style='max-heigth: 100px;' src='doc/misc/mapache.png'/>
+</div>
 ***
 
 Visit the [official homepage](https://danibt656.github.io/website/mapache/)
