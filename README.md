@@ -12,8 +12,6 @@
 
 ***
 
-Visit the [official homepage](https://danibt656.github.io/website/mapache/)
-
 Jump to the [Setup Page](doc/setup.md)
 
 Jump to the [HTTPS config Page](doc/https.md)
